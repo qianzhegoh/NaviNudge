@@ -37,7 +37,7 @@ class MyHomePage extends StatelessWidget {
     return Scaffold(
       body: Column(
         children: [
-          Text('OMG THIS IS SO COOL'),
+          Text('OMG THIS IS SO COOL! WOW!'),
           Text(appState.current.asLowerCase),
         ],
       ),
