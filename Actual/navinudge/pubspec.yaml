@@ -1,5 +1,5 @@
-name: namer_app
-description: A new Flutter project.
+name: NaviNudge
+description: A flutter App for Haptic Navigation
 
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
@@ -23,3 +23,5 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - images/navinudge_logo.png
