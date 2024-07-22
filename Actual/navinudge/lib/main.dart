@@ -20,7 +20,22 @@ class MyApp extends StatelessWidget{
           Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              ElevatedButton(onPressed:null, child: Text('Press Me'))
+              Text(textScaler: TextScaler.linear(4),"Welcome"),
+              SizedBox(height:50),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 50.0),
+                child: TextField(
+                  decoration: InputDecoration(border: OutlineInputBorder(),labelText: "Username", icon: Icon(Icons.person)),),
+              ),
+              SizedBox(height:10.0),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 50.0),
+                child: TextField(decoration:InputDecoration(border: OutlineInputBorder(),labelText: "Password", icon:Icon(Icons.password)),),
+              ),
+              SizedBox(height: 50),
+              ElevatedButton(onPressed:null, child: Text('Login')),
+              SizedBox(height: 5),
+              ElevatedButton(onPressed: null, child: Text('Sign Up'))
             ],
           ),
             ),
