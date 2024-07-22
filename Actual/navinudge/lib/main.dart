@@ -9,13 +9,20 @@ class MyApp extends StatelessWidget{
   @override
   Widget build(BuildContext context){
     return MaterialApp(
+      theme: ThemeData(
+        useMaterial3: true,
+        textTheme: GoogleFonts.openSansTextTheme(),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green)
+        ),
       home: Scaffold(
-        appBar: AppBar(backgroundColor:Colors.green,
-        title: const Text('Hello World')),
         body: const Center(
-          child: Text(
-            'This is a text!'
-            ),
+          child: 
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ElevatedButton(onPressed:null, child: Text('Press Me'))
+            ],
+          ),
             ),
       )
     );
