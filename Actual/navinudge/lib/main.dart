@@ -5,7 +5,25 @@ void main() {
   runApp(MyApp());
 }
 
+class ImageBanner extends StatelessWidget {
+  final String _assetPath;
+
+  ImageBanner(this._assetPath);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+        constraints: BoxConstraints.expand(height: 200.0),
+        decoration: BoxDecoration(color: Colors.grey),
+        child: Image.asset(
+          _assetPath,
+          fit: BoxFit.cover,
+        ));
+  }
+}
+
 class MyApp extends StatelessWidget{
+  const MyApp({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context){
     return MaterialApp(
@@ -20,7 +38,8 @@ class MyApp extends StatelessWidget{
           Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(textScaler: TextScaler.linear(4),"Welcome"),
+              DecoratedBox(decoration: BoxDecoration(image: DecorationImage(image: AssetImage('assets/images/navinudge_logo.png')))),
+              Text(textScaler: TextScaler.linear(2.5),"Welcome"),
               SizedBox(height:50),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 50.0),
