@@ -32,7 +32,7 @@ class LoginPage extends StatelessWidget {
         height: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.white, Colors.blue],
+            colors: [Colors.blue, Colors.white],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter),
         ),
@@ -130,13 +130,27 @@ class SetUp extends StatelessWidget {
             const SizedBox(height: 50),
             Column(
               children: [
-                FilledButton(
-                  onPressed: () {},
-                  child: const Text("Yes, connect my NaviNudge"),
+                SizedBox(
+                  height:50,
+                  width:300,
+                  child: FilledButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const BluetoothSelect())
+                      );
+                    },
+                    child: const Text("Yes, connect my NaviNudge", style:TextStyle(fontSize: 18)),
+                  ),
                 ),
-                FilledButton(
-                  onPressed: () {},
-                  child: const Text("No, I am a caretaker"),
+                SizedBox(height:10),
+                SizedBox(
+                  height: 50,
+                  width: 300,
+                  child: FilledButton(
+                    onPressed: () {},
+                    child: const Text("No, I am a caretaker", style: TextStyle(fontSize: 18)),
+                  ),
                 ),
               ],
             ),
@@ -153,6 +167,47 @@ class SetUp extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class BluetoothSelect extends StatelessWidget {
+  const BluetoothSelect({Key? key}) : super(key: key);
+// Developer's Note: Bluetooth functionality has not been developed for this app. Refer to flutter_blue documentation.
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("Connect my NaviNudge")),
+      body: 
+      Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Found Devices:', style: TextStyle(fontSize: 32)),
+            //RefreshIndicator(child: child, onRefresh: onRefresh),
+            // ListView.builder(
+            //   itemCount: 5,
+            //   itemBuilder: (BuildContext context, int index){
+            //     return ListTile(
+            //       title:TextButton(
+            //         onPressed: (){}, 
+            //         child: Text('Navinudge #$index')),);
+            //   },
+            // ),
+            SizedBox(
+              height: 80,
+              width:300,
+              child: TextButton(
+                onPressed: () {}, 
+                child: Text("NaviNudge #1368", style:TextStyle(fontSize: 32))))
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: (){},
+        icon:const Icon(Icons.refresh),
+        label: const Text('Refresh')
+        ),
     );
   }
 }
