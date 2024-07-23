@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
         textTheme: GoogleFonts.openSansTextTheme(),
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.lightBlue),
       ),
       home: const LoginPage(),
     );
@@ -32,7 +32,7 @@ class LoginPage extends StatelessWidget {
         height: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.blue, Colors.white],
+            colors: [Colors.white, Colors.blue],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter),
         ),
@@ -83,14 +83,14 @@ class LoginPage extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  ElevatedButton(
+                  FilledButton(
                     onPressed: () {
                       // Add sign-up action here
                     },
                     child: const Text('Sign Up'),
                   ),
                   const SizedBox(width: 10),
-                  ElevatedButton(
+                  FilledButton(
                     onPressed: () {
                       Navigator.push(
                         context,
@@ -184,22 +184,49 @@ class BluetoothSelect extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text('Found Devices:', style: TextStyle(fontSize: 32)),
-            //RefreshIndicator(child: child, onRefresh: onRefresh),
-            // ListView.builder(
-            //   itemCount: 5,
-            //   itemBuilder: (BuildContext context, int index){
-            //     return ListTile(
-            //       title:TextButton(
-            //         onPressed: (){}, 
-            //         child: Text('Navinudge #$index')),);
-            //   },
-            // ),
+            SizedBox(height:50),
             SizedBox(
-              height: 80,
+              height: 60,
               width:300,
-              child: TextButton(
+              child: ElevatedButton(
+                onPressed: () {
+                  final snackBar = SnackBar(
+                    content: const Text('NaviNudge connected'),
+                    action: SnackBarAction(
+                      label: 'Cancel',
+                      onPressed: (){
+                        Navigator.pop(context);
+                      },
+                    )
+                    );
+                  ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context)=>const ProfilePage())
+                  );
+                }, 
+                child: Text("NaviNudge #1368", style:TextStyle(fontSize: 24)))),
+            SizedBox(height:20),
+            SizedBox(
+              height: 60,
+              width:300,
+              child: ElevatedButton(
                 onPressed: () {}, 
-                child: Text("NaviNudge #1368", style:TextStyle(fontSize: 32))))
+                child: Text("NaviNudge #9858", style:TextStyle(fontSize: 24)))),
+            SizedBox(height: 20),
+            SizedBox(
+              height: 60,
+              width:300,
+              child: ElevatedButton(
+                onPressed: () {}, 
+                child: Text("NaviNudge #1309", style:TextStyle(fontSize: 24)))),
+            SizedBox(height: 20),
+            SizedBox(
+              height: 60,
+              width:300,
+              child: ElevatedButton(
+                onPressed: () {}, 
+                child: Text("NaviNudge #7879", style:TextStyle(fontSize: 24))))
           ],
         ),
       ),
@@ -208,6 +235,25 @@ class BluetoothSelect extends StatelessWidget {
         icon:const Icon(Icons.refresh),
         label: const Text('Refresh')
         ),
+    );
+  }
+}
+
+class ProfilePage extends StatelessWidget {
+  const ProfilePage({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("My Profile"),),
+      body: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            
+          ],
+        ),
+      ),
     );
   }
 }
