@@ -202,7 +202,7 @@ class BluetoothSelect extends StatelessWidget {
                   ScaffoldMessenger.of(context).showSnackBar(snackBar);
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context)=>const ProfilePage())
+                    MaterialPageRoute(builder: (context)=> ProfilePage())
                   );
                 }, 
                 child: Text("NaviNudge #1368", style:TextStyle(fontSize: 24)))),
@@ -239,8 +239,10 @@ class BluetoothSelect extends StatelessWidget {
   }
 }
 
+// ignore: must_be_immutable
 class ProfilePage extends StatelessWidget {
-  const ProfilePage({Key? key}) : super(key: key);
+
+  var selectedIndex = 1; // This is to indicate that 
 
   @override
   Widget build(BuildContext context) {
@@ -254,6 +256,18 @@ class ProfilePage extends StatelessWidget {
           ],
         ),
       ),
+      bottomNavigationBar: NavigationBar(
+        destinations: const <Widget>[
+          NavigationDestination(
+            selectedIcon: Icon(Icons.home),
+            icon: Icon(Icons.home_outlined), 
+            label: 'Home'),
+          NavigationDestination(
+            selectedIcon: Icon(Icons.person),
+            icon: Icon(Icons.person_outline),
+            label: 'Profile'),
+        ]
+        )
     );
   }
 }
