@@ -202,7 +202,7 @@ class BluetoothSelect extends StatelessWidget {
                   ScaffoldMessenger.of(context).showSnackBar(snackBar);
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context)=> ProfilePage())
+                    MaterialPageRoute(builder: (context)=> HomePage())
                   );
                 }, 
                 child: Text("NaviNudge #1368", style:TextStyle(fontSize: 24)))),
@@ -239,35 +239,62 @@ class BluetoothSelect extends StatelessWidget {
   }
 }
 
-// ignore: must_be_immutable
-class ProfilePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
+  @override
+  _HomePageState createState() => _HomePageState();
+}
 
-  var selectedIndex = 1; // This is to indicate that 
+class _HomePageState extends State<HomePage> {
+  int _selectedIndex = 1;
+
+  static List<Widget> _pages = <Widget>[
+    Center(child: Text('Home Page')),
+    ProfilePage(),
+  ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("My Profile"),),
+      body: _pages.elementAt(_selectedIndex),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _selectedIndex,
+        onDestinationSelected: _onItemTapped,
+        destinations: [
+          NavigationDestination(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class ProfilePage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('My Profile'),
+      ),
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            
+            Text('Profile Content'),
           ],
         ),
       ),
-      bottomNavigationBar: NavigationBar(
-        destinations: const <Widget>[
-          NavigationDestination(
-            selectedIcon: Icon(Icons.home),
-            icon: Icon(Icons.home_outlined), 
-            label: 'Home'),
-          NavigationDestination(
-            selectedIcon: Icon(Icons.person),
-            icon: Icon(Icons.person_outline),
-            label: 'Profile'),
-        ]
-        )
     );
   }
 }
