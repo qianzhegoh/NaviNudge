@@ -1,5 +1,8 @@
+// ignore_for_file: library_private_types_in_public_api
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 void main() {
   runApp(const MyApp());
@@ -240,15 +243,30 @@ class BluetoothSelect extends StatelessWidget {
 }
 
 class HomePage extends StatefulWidget {
+  const HomePage({Key? key}) : super(key: key);
+
   @override
   _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  int _selectedIndex = 1;
+  int _selectedIndex = 0;
+  late GoogleMapController mapController;
 
-  static List<Widget> _pages = <Widget>[
-    Center(child: Text('Home Page')),
+  final LatLng _center = const LatLng(1.3412841720874797, 103.96375602825361);
+
+  void _onMapCreated(GoogleMapController controller) {
+    mapController = controller;
+  }
+
+  List<Widget> _pages() => <Widget>[
+    GoogleMap(
+      onMapCreated: _onMapCreated,
+      initialCameraPosition: CameraPosition(
+        target: _center,
+        zoom: 17.0,
+      ),
+    ),
     ProfilePage(),
   ];
 
@@ -261,11 +279,11 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _pages.elementAt(_selectedIndex),
+      body: _pages().elementAt(_selectedIndex),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
         onDestinationSelected: _onItemTapped,
-        destinations: [
+        destinations: const [
           NavigationDestination(
             icon: Icon(Icons.home),
             label: 'Home',
@@ -290,7 +308,7 @@ class ProfilePage extends StatelessWidget {
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          children: [
+          children: const [
             Text('Profile Content'),
           ],
         ),
