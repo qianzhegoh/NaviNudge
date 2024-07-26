@@ -35,9 +35,9 @@ class LoginPage extends StatelessWidget {
         height: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.white, Colors.blue],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter),
+              colors: [Colors.white, Colors.blue],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter),
         ),
         child: Center(
           child: Column(
@@ -134,25 +134,27 @@ class SetUp extends StatelessWidget {
             Column(
               children: [
                 SizedBox(
-                  height:50,
-                  width:300,
+                  height: 50,
+                  width: 300,
                   child: FilledButton(
                     onPressed: () {
                       Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const BluetoothSelect())
-                      );
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const BluetoothSelect()));
                     },
-                    child: const Text("Yes, connect my NaviNudge", style:TextStyle(fontSize: 18)),
+                    child: const Text("Yes, connect my NaviNudge",
+                        style: TextStyle(fontSize: 18)),
                   ),
                 ),
-                SizedBox(height:10),
+                SizedBox(height: 10),
                 SizedBox(
                   height: 50,
                   width: 300,
                   child: FilledButton(
                     onPressed: () {},
-                    child: const Text("No, I am a caretaker", style: TextStyle(fontSize: 18)),
+                    child: const Text("No, I am a caretaker",
+                        style: TextStyle(fontSize: 18)),
                   ),
                 ),
               ],
@@ -181,63 +183,62 @@ class BluetoothSelect extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Connect my NaviNudge")),
-      body: 
-      Center(
+      body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text('Found Devices:', style: TextStyle(fontSize: 32)),
-            SizedBox(height:50),
+            SizedBox(height: 50),
             SizedBox(
-              height: 60,
-              width:300,
-              child: ElevatedButton(
-                onPressed: () {
-                  final snackBar = SnackBar(
-                    content: const Text('NaviNudge connected'),
-                    action: SnackBarAction(
-                      label: 'Cancel',
-                      onPressed: (){
-                        Navigator.pop(context);
-                      },
-                    )
-                    );
-                  ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context)=> HomePage())
-                  );
-                }, 
-                child: Text("NaviNudge #1368", style:TextStyle(fontSize: 24)))),
-            SizedBox(height:20),
-            SizedBox(
-              height: 60,
-              width:300,
-              child: ElevatedButton(
-                onPressed: () {}, 
-                child: Text("NaviNudge #9858", style:TextStyle(fontSize: 24)))),
+                height: 60,
+                width: 300,
+                child: ElevatedButton(
+                    onPressed: () {
+                      final snackBar = SnackBar(
+                          content: const Text('NaviNudge connected'),
+                          action: SnackBarAction(
+                            label: 'Cancel',
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                          ));
+                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (context) => HomePage()));
+                    },
+                    child: Text("NaviNudge #1368",
+                        style: TextStyle(fontSize: 24)))),
             SizedBox(height: 20),
             SizedBox(
-              height: 60,
-              width:300,
-              child: ElevatedButton(
-                onPressed: () {}, 
-                child: Text("NaviNudge #1309", style:TextStyle(fontSize: 24)))),
+                height: 60,
+                width: 300,
+                child: ElevatedButton(
+                    onPressed: () {},
+                    child: Text("NaviNudge #9858",
+                        style: TextStyle(fontSize: 24)))),
             SizedBox(height: 20),
             SizedBox(
-              height: 60,
-              width:300,
-              child: ElevatedButton(
-                onPressed: () {}, 
-                child: Text("NaviNudge #7879", style:TextStyle(fontSize: 24))))
+                height: 60,
+                width: 300,
+                child: ElevatedButton(
+                    onPressed: () {},
+                    child: Text("NaviNudge #1309",
+                        style: TextStyle(fontSize: 24)))),
+            SizedBox(height: 20),
+            SizedBox(
+                height: 60,
+                width: 300,
+                child: ElevatedButton(
+                    onPressed: () {},
+                    child: Text("NaviNudge #7879",
+                        style: TextStyle(fontSize: 24))))
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: (){},
-        icon:const Icon(Icons.refresh),
-        label: const Text('Refresh')
-        ),
+          onPressed: () {},
+          icon: const Icon(Icons.refresh),
+          label: const Text('Refresh')),
     );
   }
 }
@@ -260,15 +261,15 @@ class _HomePageState extends State<HomePage> {
   }
 
   List<Widget> _pages() => <Widget>[
-    GoogleMap(
-      onMapCreated: _onMapCreated,
-      initialCameraPosition: CameraPosition(
-        target: _center,
-        zoom: 17.0,
-      ),
-    ),
-    ProfilePage(),
-  ];
+        GoogleMap(
+          onMapCreated: _onMapCreated,
+          initialCameraPosition: CameraPosition(
+            target: _center,
+            zoom: 17.0,
+          ),
+        ),
+        ProfilePage(),
+      ];
 
   void _onItemTapped(int index) {
     setState(() {
@@ -279,7 +280,20 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _pages().elementAt(_selectedIndex),
+      body: Stack(children: [
+        _pages().elementAt(_selectedIndex),
+        Positioned(
+            bottom: 60,
+            left: MediaQuery.of(context).size.width / 2 - 80,
+            child: FloatingActionButton.extended(
+              onPressed: () {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => NavigationPage()));
+              },
+              icon: Icon(Icons.play_arrow),
+              label: Text("Start Navigation")
+            ))
+      ]),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
         onDestinationSelected: _onItemTapped,
@@ -312,6 +326,17 @@ class ProfilePage extends StatelessWidget {
             Text('Profile Content'),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class NavigationPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Select your destination')
       ),
     );
   }
