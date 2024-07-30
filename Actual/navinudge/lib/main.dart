@@ -5,9 +5,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+
 
 
 void main() {
+  FlutterBluePlus.setLogLevel(LogLevel.verbose, color:false);
   runApp(const MyApp());
 }
 
@@ -348,14 +351,222 @@ class NavigationPage extends StatelessWidget {
             width: 300,
             child: ElevatedButton(
               onPressed: (){
-                // Navigator.push(
-                //   context, MaterialPageRoute(builder: (context) => BluetoothScanner())
-                // );
+                Navigator.push(
+                  context, MaterialPageRoute(builder: (context) => BluetoothScanner())
+                );
               }, 
               child: const Text("Bluetooth example",
                         style: TextStyle(fontSize: 18)),))],
           ),
       )
+    );
+  }
+}
+class BluetoothScanner extends StatefulWidget {
+  const BluetoothScanner({Key? key}) : super(key: key);
+
+  @override
+  State<BluetoothScanner> createState() => _BluetoothScannerState();
+}
+
+class _BluetoothScannerState extends State<BluetoothScanner> {
+  BluetoothAdapterState _adapterState = BluetoothAdapterState.unknown;
+  late StreamSubscription<BluetoothAdapterState> _adapterStateSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _adapterStateSubscription = FlutterBluePlus.adapterState.listen((state) {
+      setState(() {
+        _adapterState = state;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _adapterStateSubscription.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Bluetooth Scanner'),
+      ),
+      body: Center(
+        child: Column(
+          children: [
+            SizedBox(
+              height:30,
+              width:30,
+            ),
+            Text('Adapter State: $_adapterState'),
+            ElevatedButton(
+              onPressed: (){
+                Navigator.push(
+                  context, MaterialPageRoute(builder: (context) => ScanScreen())
+                );
+              }, 
+              child: const Text("ScanScreen",
+                        style: TextStyle(fontSize: 18)),)
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class ScanScreen extends StatefulWidget {
+  const ScanScreen({Key? key}) : super(key: key);
+
+  @override
+  State<ScanScreen> createState() => _ScanScreenState();
+}
+
+class _ScanScreenState extends State<ScanScreen> {
+  List<BluetoothDevice> _systemDevices = [];
+  List<ScanResult> _scanResults = [];
+  bool _isScanning = false;
+  late StreamSubscription<List<ScanResult>> _scanResultsSubscription;
+  late StreamSubscription<bool> _isScanningSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _scanResultsSubscription = FlutterBluePlus.scanResults.listen((results) {
+      setState(() {
+        _scanResults = results;
+      });
+    }, onError: (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Scan Error: $e")),
+      );
+    });
+
+    _isScanningSubscription = FlutterBluePlus.isScanning.listen((state) {
+      setState(() {
+        _isScanning = state;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _scanResultsSubscription.cancel();
+    _isScanningSubscription.cancel();
+    super.dispose();
+  }
+
+  Future<void> onScanPressed() async {
+    try {
+      _systemDevices = await FlutterBluePlus.connectedDevices;
+      await FlutterBluePlus.startScan(timeout: const Duration(seconds: 15));
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: $e")),
+      );
+    }
+  }
+
+  Future<void> onStopPressed() async {
+    try {
+      await FlutterBluePlus.stopScan();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Stop Scan Error: $e")),
+      );
+    }
+  }
+
+  void onConnectPressed(BluetoothDevice device) {
+    device.connect().then((_) {
+      Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => DeviceScreen(device: device),
+      ));
+    }).catchError((e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Connect Error: $e")),
+      );
+    });
+  }
+
+  Future<void> onRefresh() async {
+    if (!_isScanning) {
+      await FlutterBluePlus.startScan(timeout: const Duration(seconds: 15));
+    }
+  }
+
+  Widget buildScanButton(BuildContext context) {
+    if (_isScanning) {
+      return FloatingActionButton(
+        child: const Icon(Icons.stop),
+        onPressed: onStopPressed,
+        backgroundColor: Colors.red,
+      );
+    } else {
+      return FloatingActionButton(
+        child: const Text("SCAN"),
+        onPressed: onScanPressed,
+      );
+    }
+  }
+
+  List<Widget> _buildSystemDeviceTiles(BuildContext context) {
+    return _systemDevices.map((d) {
+      return ListTile(
+        title: Text(d.name),
+        subtitle: Text(d.id.toString()),
+        onTap: () => onConnectPressed(d),
+      );
+    }).toList();
+  }
+
+  List<Widget> _buildScanResultTiles(BuildContext context) {
+    return _scanResults.map((r) {
+      return ListTile(
+        title: Text(r.device.name),
+        subtitle: Text(r.device.id.toString()),
+        onTap: () => onConnectPressed(r.device),
+      );
+    }).toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Find Devices'),
+      ),
+      body: RefreshIndicator(
+        onRefresh: onRefresh,
+        child: ListView(
+          children: <Widget>[
+            ..._buildSystemDeviceTiles(context),
+            ..._buildScanResultTiles(context),
+          ],
+        ),
+      ),
+      floatingActionButton: buildScanButton(context),
+    );
+  }
+}
+
+class DeviceScreen extends StatelessWidget {
+  final BluetoothDevice device;
+
+  const DeviceScreen({Key? key, required this.device}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(device.name),
+      ),
+      body: Center(
+        child: Text('Device ID: ${device.id}'),
+      ),
     );
   }
 }
