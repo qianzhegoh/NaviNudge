@@ -331,12 +331,66 @@ class ProfilePage extends StatelessWidget {
   }
 }
 
-class NavigationPage extends StatelessWidget {
+class NavigationPage extends StatefulWidget {
+  @override
+  _NavigationPageState createState() => _NavigationPageState();
+}
+
+class _NavigationPageState extends State<NavigationPage> {
+  GoogleMapController? mapController;
+  final List<String> _addresses = [];
+  final TextEditingController _addressController = TextEditingController();
+
+  void _onMapCreated(GoogleMapController controller) {
+    mapController = controller;
+  }
+
+  void _addAddress() {
+    if (_addresses.length < 3 && _addressController.text.isNotEmpty) {
+      setState(() {
+        _addresses.add(_addressController.text);
+        _addressController.clear();
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _addressController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Select your destination')
+        title: const Text('Select your destination'),
+      ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              children: [
+                TextField(
+                  controller: _addressController,
+                  decoration: InputDecoration(
+                    labelText: 'Enter address',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                SizedBox(height: 10),
+                ElevatedButton(
+                  onPressed: _addAddress,
+                  child: Text('Add Address'),
+                ),
+                SizedBox(height: 10),
+                Text('Saved Addresses:'),
+                for (var address in _addresses) Text(address),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
