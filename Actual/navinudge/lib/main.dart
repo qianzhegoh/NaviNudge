@@ -1,12 +1,13 @@
 // ignore_for_file: library_private_types_in_public_api
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+
 
 void main() {
-  FlutterBluePlus.setLogLevel(LogLevel.verbose, color: true);
   runApp(const MyApp());
 }
 
@@ -347,81 +348,14 @@ class NavigationPage extends StatelessWidget {
             width: 300,
             child: ElevatedButton(
               onPressed: (){
-                Navigator.push(
-                  context, MaterialPageRoute(builder: (context) => BleScanner())
-                );
+                // Navigator.push(
+                //   context, MaterialPageRoute(builder: (context) => BluetoothScanner())
+                // );
               }, 
               child: const Text("Bluetooth example",
                         style: TextStyle(fontSize: 18)),))],
           ),
       )
-    );
-  }
-}
-
-class BluetoothScanner extends StatefulWidget {
-  @override
-  _BluetoothScannerState createState() => _BluetoothScannerState();
-}
-
-class _BluetoothScannerState extends State<BluetoothScanner> {
-  FlutterBluePlus flutterBlue = FlutterBluePlus.instance;
-  List<ScanResult> scanResults = [];
-  bool isScanning = false;
-
-  void startScan() {
-    setState(() {
-      isScanning = true;
-    });
-
-    flutterBlue.startScan(timeout: Duration(seconds: 5)).listen((result) {
-      if (!scanResults.contains(result)) {
-        setState(() {
-          scanResults.add(result);
-        });
-      }
-    }).onDone(() {
-      setState(() {
-        isScanning = false;
-      });
-    });
-  }
-
-  void stopScan() {
-    flutterBlue.stopScan();
-    setState(() {
-      isScanning = false;
-    });
-  }
-
-  @override
-  void dispose() {
-    flutterBlue.stopScan();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Bluetooth Scanner'),
-        actions: [
-          IconButton(
-            icon: Icon(isScanning ? Icons.stop : Icons.search),
-            onPressed: isScanning ? stopScan : startScan,
-          ),
-        ],
-      ),
-      body: ListView.builder(
-        itemCount: scanResults.length,
-        itemBuilder: (context, index) {
-          final result = scanResults[index];
-          return ListTile(
-            title: Text(result.device.name.isEmpty ? 'Unknown Device' : result.device.name),
-            subtitle: Text(result.device.id.toString()),
-          );
-        },
-      ),
     );
   }
 }
