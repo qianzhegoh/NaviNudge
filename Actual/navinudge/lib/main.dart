@@ -182,7 +182,7 @@ class BluetoothSelect extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Connect my NaviNudge")),
+      appBar: AppBar(title: const Text("connect my NaviNudge")),
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
