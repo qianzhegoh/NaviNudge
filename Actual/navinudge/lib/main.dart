@@ -6,6 +6,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 
 void main() {
+  FlutterBluePlus.setLogLevel(LogLevel.verbose, color: true);
   runApp(const MyApp());
 }
 
@@ -358,55 +359,69 @@ class NavigationPage extends StatelessWidget {
   }
 }
 
-class BleScanner extends StatefulWidget {
+class BluetoothScanner extends StatefulWidget {
   @override
-  _BleScannerState createState() => _BleScannerState();
+  _BluetoothScannerState createState() => _BluetoothScannerState();
 }
 
-class _BleScannerState extends State<BleScanner> {
-  FlutterBluePlus flutterBlue = FlutterBluePlus();
-  List<BluetoothDevice> devices = [];
+class _BluetoothScannerState extends State<BluetoothScanner> {
+  FlutterBluePlus flutterBlue = FlutterBluePlus.instance;
+  List<ScanResult> scanResults = [];
+  bool isScanning = false;
 
-  @override
-  void initState() {
-    super.initState();
-    startScanning();
+  void startScan() {
+    setState(() {
+      isScanning = true;
+    });
+
+    flutterBlue.startScan(timeout: Duration(seconds: 5)).listen((result) {
+      if (!scanResults.contains(result)) {
+        setState(() {
+          scanResults.add(result);
+        });
+      }
+    }).onDone(() {
+      setState(() {
+        isScanning = false;
+      });
+    });
   }
 
-  void startScanning() async {
-    await FlutterBluePlus.startScan();
-    FlutterBluePlus.scanResults.listen((results) {
-      for (ScanResult result in results) {
-        if (!devices.contains(result.device)) {
-          setState(() {
-            devices.add(result.device);
-          });
-        }
-      }
+  void stopScan() {
+    flutterBlue.stopScan();
+    setState(() {
+      isScanning = false;
     });
+  }
+
+  @override
+  void dispose() {
+    flutterBlue.stopScan();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('BLE Scanner'),
+        title: Text('Bluetooth Scanner'),
+        actions: [
+          IconButton(
+            icon: Icon(isScanning ? Icons.stop : Icons.search),
+            onPressed: isScanning ? stopScan : startScan,
+          ),
+        ],
       ),
       body: ListView.builder(
-        itemCount: devices.length,
+        itemCount: scanResults.length,
         itemBuilder: (context, index) {
+          final result = scanResults[index];
           return ListTile(
-            title: Text(devices[index].name),
-            subtitle: Text(devices[index].id.toString()),
+            title: Text(result.device.name.isEmpty ? 'Unknown Device' : result.device.name),
+            subtitle: Text(result.device.id.toString()),
           );
         },
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    FlutterBluePlus.stopScan();
-    super.dispose();
   }
 }
