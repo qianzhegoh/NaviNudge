@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 
 void main() {
   runApp(const MyApp());
@@ -331,67 +332,81 @@ class ProfilePage extends StatelessWidget {
   }
 }
 
-class NavigationPage extends StatefulWidget {
+class NavigationPage extends StatelessWidget {
   @override
-  _NavigationPageState createState() => _NavigationPageState();
+  Widget build(BuildContext context){
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Please choose your destination'),
+        ),
+      body: Center(
+        child: Column(
+          children: [SizedBox(
+            height:50,
+            width: 300,
+            child: ElevatedButton(
+              onPressed: (){
+                Navigator.push(
+                  context, MaterialPageRoute(builder: (context) => BleScanner())
+                );
+              }, 
+              child: const Text("Bluetooth example",
+                        style: TextStyle(fontSize: 18)),))],
+          ),
+      )
+    );
+  }
 }
 
-class _NavigationPageState extends State<NavigationPage> {
-  GoogleMapController? mapController;
-  final List<String> _addresses = [];
-  final TextEditingController _addressController = TextEditingController();
+class BleScanner extends StatefulWidget {
+  @override
+  _BleScannerState createState() => _BleScannerState();
+}
 
-  void _onMapCreated(GoogleMapController controller) {
-    mapController = controller;
-  }
-
-  void _addAddress() {
-    if (_addresses.length < 3 && _addressController.text.isNotEmpty) {
-      setState(() {
-        _addresses.add(_addressController.text);
-        _addressController.clear();
-      });
-    }
-  }
+class _BleScannerState extends State<BleScanner> {
+  FlutterBluePlus flutterBlue = FlutterBluePlus();
+  List<BluetoothDevice> devices = [];
 
   @override
-  void dispose() {
-    _addressController.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    startScanning();
+  }
+
+  void startScanning() async {
+    await FlutterBluePlus.startScan();
+    FlutterBluePlus.scanResults.listen((results) {
+      for (ScanResult result in results) {
+        if (!devices.contains(result.device)) {
+          setState(() {
+            devices.add(result.device);
+          });
+        }
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Select your destination'),
+        title: Text('BLE Scanner'),
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              children: [
-                TextField(
-                  controller: _addressController,
-                  decoration: InputDecoration(
-                    labelText: 'Enter address',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                SizedBox(height: 10),
-                ElevatedButton(
-                  onPressed: _addAddress,
-                  child: Text('Add Address'),
-                ),
-                SizedBox(height: 10),
-                Text('Saved Addresses:'),
-                for (var address in _addresses) Text(address),
-              ],
-            ),
-          ),
-        ],
+      body: ListView.builder(
+        itemCount: devices.length,
+        itemBuilder: (context, index) {
+          return ListTile(
+            title: Text(devices[index].name),
+            subtitle: Text(devices[index].id.toString()),
+          );
+        },
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    FlutterBluePlus.stopScan();
+    super.dispose();
   }
 }
