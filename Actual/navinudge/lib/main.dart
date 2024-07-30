@@ -65,7 +65,7 @@ class LoginPage extends StatelessWidget {
                 child: TextField(
                   decoration: InputDecoration(
                     border: OutlineInputBorder(),
-                    labelText: "Username",
+                    labelText: "username",
                     icon: Icon(Icons.person),
                   ),
                 ),
