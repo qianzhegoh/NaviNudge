@@ -1,8 +1,13 @@
 // ignore_for_file: library_private_types_in_public_api
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:location/location.dart';
+
 
 void main() {
   runApp(const MyApp());
@@ -255,6 +260,7 @@ class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
   late GoogleMapController mapController;
 
+//sets the location of the saved locations 
   static const _school = LatLng(1.3412841720874797, 103.96375602825361);
   static const _market = LatLng(1.3352386703088892, 103.96330804919691);
   static const _home = LatLng(1.3423764200463901, 103.96427544320599);
@@ -272,6 +278,7 @@ class _HomePageState extends State<HomePage> {
             target: _home,
             zoom: 17.0,
           ),
+          //displays the markers for the saved locations 
           markers:{
             const Marker(
               markerId: MarkerId('School'), 
@@ -311,7 +318,7 @@ class _HomePageState extends State<HomePage> {
             child: FloatingActionButton.extended(
               onPressed: () {
                 Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => NavigationPage()));
+                    MaterialPageRoute(builder: (context) => GoogleMapPage()));
               },
               icon: Icon(Icons.play_arrow),
               label: Text("Start Navigation")
@@ -354,13 +361,134 @@ class ProfilePage extends StatelessWidget {
   }
 }
 
-class NavigationPage extends StatelessWidget {
+class GoogleMapPage extends StatefulWidget {
+  const GoogleMapPage({super.key});
+
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Select your destination')
-      ),
-    );
-  }
+  State<GoogleMapPage> createState() => NavigationPage();
 }
+
+class NavigationPage extends State<GoogleMapPage> {
+
+  final Location location = Location();
+  LatLng? currentPosition;
+
+  void initState() {
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) async => await fetchLocationUpdates());
+  }
+
+  // Future<void> initializeMap() async {
+  //   await fetchLocationUpdates();
+  //   // final coordinates = await fetchPolylinePoints();
+  //   // generatePolyLineFromPoints(coordinates);
+  // }
+
+  Future <void> fetchLocationUpdates() async {
+    bool serviceEnabled;
+    PermissionStatus permissionGranted; 
+    serviceEnabled = await location.serviceEnabled();
+    serviceEnabled = await location.serviceEnabled();
+    if (!serviceEnabled) {
+      serviceEnabled = await location.requestService();
+      if (!serviceEnabled) {
+        return;
+      }
+    }
+
+    permissionGranted = await location.hasPermission();
+    if (permissionGranted == PermissionStatus.denied) {
+      permissionGranted = await location.requestPermission();
+      if (permissionGranted != PermissionStatus.granted) {
+        return;
+      }
+    }
+
+
+    
+    location.onLocationChanged.listen((currentLocation) {
+      if (currentLocation.latitude != null &&
+          currentLocation.longitude != null) {
+        setState(() {
+          currentPosition = LatLng(
+            currentLocation.latitude!,
+            currentLocation.longitude!,
+          );
+        });
+      }
+    });
+
+  }
+
+
+
+  // bool _serviceEnabled = false;
+  // PermissionStatus _permissionGranted;
+  // LocationData _locationData;
+
+  // _serviceEnabled = await location.serviceEnabled();
+  // if (!_serviceEnabled) {
+  //   _serviceEnabled = await location.requestService();
+  //   if (!_serviceEnabled) {
+  //     return;
+  //   }
+  // }
+
+  // _permissionGranted = await location.hasPermission();
+  // if (_permissionGranted == PermissionStatus.denied) {
+  //   _permissionGranted = await location.requestPermission();
+  //   if (_permissionGranted != PermissionStatus.granted) {
+  //     return;
+  //   }
+  // }
+
+  // _locationData = await location.getLocation();
+
+  // @override
+  // Widget build(BuildContext context) {
+  //   return Scaffold(
+  //     appBar: AppBar(
+  //       title: const Text('Select your destination')),
+  //     body: Center(
+  //       child:Column(
+  //         mainAxisSize: MainAxisSize.min,
+  //         children: [
+  //           Text('')
+  //         ], 
+  //       )
+  //     )
+  //   );
+  // }
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+        body: currentPosition == null
+            ? const Center(child: CircularProgressIndicator())
+            : GoogleMap(
+                initialCameraPosition: const CameraPosition(
+                  target: _HomePageState._home,
+                  zoom: 13,
+                ),
+                markers: {
+                  Marker(
+                    markerId: const MarkerId('currentLocation'),
+                    icon: BitmapDescriptor.defaultMarker,
+                    position: currentPosition!,
+                  ),
+                  const Marker(
+                    markerId: MarkerId('sourceLocation'),
+                    icon: BitmapDescriptor.defaultMarker,
+                    position: _HomePageState._home,
+                  ),
+                  const Marker(
+                    markerId: MarkerId('destinationLocation'),
+                    icon: BitmapDescriptor.defaultMarker,
+                    position: _HomePageState._market,
+                  )
+                },
+              ),
+      );
+
+}
+
+
