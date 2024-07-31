@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'ble_controller.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 
 
@@ -16,7 +17,6 @@ void main() {
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -365,57 +365,72 @@ class NavigationPage extends StatelessWidget {
 
 class BluetoothSetup extends StatefulWidget {
   const BluetoothSetup({super.key});
+
   @override
   State<BluetoothSetup> createState() => _BluetoothSetupState();
 }
+
 class _BluetoothSetupState extends State<BluetoothSetup> {
+  final BleController bleController = Get.put(BleController());
+
+  Future<void> _requestPermissions() async {
+    if (await Permission.bluetoothScan.request().isGranted &&
+        await Permission.locationWhenInUse.request().isGranted) {
+      // Permissions are granted
+    } else {
+      Get.snackbar("Permission Denied", "Bluetooth and Location permissions are required to scan for devices.",
+          snackPosition: SnackPosition.BOTTOM);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: Text("BLE SCANNER"),),
-        body: GetBuilder<BleController>(
-          init: BleController(),
-          builder: (BleController controller)
-          {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  StreamBuilder<List<ScanResult>>(
-                      stream: controller.scanResults,
-                      builder: (context, snapshot) {
-                        if (snapshot.hasData) {
-                          return Expanded(
-                            child: ListView.builder(
-                                shrinkWrap: true,
-                                itemCount: snapshot.data!.length,
-                                itemBuilder: (context, index) {
-                                  final data = snapshot.data![index];
-                                  return Card(
-                                    elevation: 2,
-                                    child: ListTile(
-                                      title: Text(data.device.platformName),
-                                      subtitle: Text(data.device.remoteId.str),
-                                      trailing: Text(data.rssi.toString()),
-                                      onTap: ()=> controller.connectToDevice(data.device),
-                                    ),
-                                  );
-                                }),
+      appBar: AppBar(title: Text("BLE SCANNER")),
+      body: GetBuilder<BleController>(
+        init: bleController,
+        builder: (BleController controller) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Obx(() {
+                  if (controller.scanResults.isEmpty) {
+                    return Center(child: Text("No Device Found"));
+                  } else {
+                    return Expanded(
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: controller.scanResults.length,
+                        itemBuilder: (context, index) {
+                          final data = controller.scanResults[index];
+                          return Card(
+                            elevation: 2,
+                            child: ListTile(
+                              title: Text(data.device.platformName),
+                              subtitle: Text(data.device.remoteId.toString()),
+                              trailing: Text(data.rssi.toString()),
+                              onTap: () => controller.connectToDevice(data.device),
+                            ),
                           );
-                        }else{
-                          return Center(child: Text("No Device Found"),);
-                        }
-                      }),
-                  SizedBox(height: 10,),
-                  ElevatedButton(onPressed: ()  async {
+                        },
+                      ),
+                    );
+                  }
+                }),
+                SizedBox(height: 10),
+                ElevatedButton(
+                  onPressed: () async {
+                    await _requestPermissions();
                     controller.scanDevices();
-                    // await controller.disconnectDevice();
-                  }, child: Text("SCAN")),
-                ],
-              ),
-            );
-          },
-        )
+                  },
+                  child: Text("SCAN"),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 }
