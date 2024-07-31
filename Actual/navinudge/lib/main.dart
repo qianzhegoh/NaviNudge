@@ -184,7 +184,7 @@ class SetUp extends StatelessWidget {
 
 class BluetoothSelect extends StatelessWidget {
   const BluetoothSelect({Key? key}) : super(key: key);
-// Developer's Note: Bluetooth functionality has not been developed for this app. Refer to flutter_blue documentation.
+// Developer's note: I am currently updating the code for this to work with our device.
   @override
   Widget build(BuildContext context) {
     return Scaffold(
