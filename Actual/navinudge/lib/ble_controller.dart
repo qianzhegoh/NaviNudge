@@ -17,7 +17,7 @@ class BleController extends GetxController {
   Future<void> scanDevices() async {
     if (await Permission.bluetoothScan.request().isGranted &&
         await Permission.locationWhenInUse.request().isGranted) {
-      FlutterBluePlus.startScan(timeout: Duration(seconds: 15));
+      FlutterBluePlus.startScan(withNames:["NaviNudge Node"], timeout: Duration(seconds: 15));
     } else {
       Get.snackbar("Permission Denied", "Bluetooth and Location permissions are required to scan for devices.",
           snackPosition: SnackPosition.BOTTOM);
