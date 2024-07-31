@@ -352,7 +352,7 @@ class NavigationPage extends StatelessWidget {
             child: ElevatedButton(
               onPressed: (){
                 Navigator.push(
-                  context, MaterialPageRoute(builder: (context) => BluetoothScanner())
+                  context, MaterialPageRoute(builder: (context) => ScanScreen())
                 );
               }, 
               child: const Text("Bluetooth example",
@@ -362,14 +362,15 @@ class NavigationPage extends StatelessWidget {
     );
   }
 }
-class BluetoothScanner extends StatefulWidget {
-  const BluetoothScanner({Key? key}) : super(key: key);
+
+class FlutterBlueApp extends StatefulWidget {
+  const FlutterBlueApp({Key? key}) : super(key: key);
 
   @override
-  State<BluetoothScanner> createState() => _BluetoothScannerState();
+  State<FlutterBlueApp> createState() => _FlutterBlueAppState();
 }
 
-class _BluetoothScannerState extends State<BluetoothScanner> {
+class _FlutterBlueAppState extends State<FlutterBlueApp> {
   BluetoothAdapterState _adapterState = BluetoothAdapterState.unknown;
   late StreamSubscription<BluetoothAdapterState> _adapterStateSubscription;
 
@@ -391,26 +392,32 @@ class _BluetoothScannerState extends State<BluetoothScanner> {
 
   @override
   Widget build(BuildContext context) {
+    return MaterialApp(
+      color: Colors.lightBlue,
+      home: _adapterState == BluetoothAdapterState.on
+          ? const ScanScreen()
+          : BluetoothOffScreen(adapterState: _adapterState),
+    );
+  }
+}
+
+class BluetoothOffScreen extends StatelessWidget {
+  final BluetoothAdapterState adapterState;
+
+  const BluetoothOffScreen({Key? key, required this.adapterState}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Bluetooth Scanner'),
+        title: const Text('Bluetooth Off'),
       ),
       body: Center(
         child: Column(
-          children: [
-            SizedBox(
-              height:30,
-              width:30,
-            ),
-            Text('Adapter State: $_adapterState'),
-            ElevatedButton(
-              onPressed: (){
-                Navigator.push(
-                  context, MaterialPageRoute(builder: (context) => ScanScreen())
-                );
-              }, 
-              child: const Text("ScanScreen",
-                        style: TextStyle(fontSize: 18)),)
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            const Text('Bluetooth adapter is currently'),
+            Text('$adapterState'.split('.')[1]),
           ],
         ),
       ),
@@ -570,3 +577,4 @@ class DeviceScreen extends StatelessWidget {
     );
   }
 }
+
