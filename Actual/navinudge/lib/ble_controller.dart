@@ -6,6 +6,7 @@ class BleController extends GetxController{
 
   FlutterBluePlus ble = FlutterBluePlus();
   
+  
 // This Function will help users to scan near by BLE devices and get the list of Bluetooth devices.
   Future scanDevices() async{
     if(await Permission.bluetoothScan.request().isGranted){
