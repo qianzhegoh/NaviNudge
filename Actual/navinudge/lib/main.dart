@@ -1,16 +1,22 @@
 // ignore_for_file: library_private_types_in_public_api
 
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'ble_controller.dart';
+import 'package:permission_handler/permission_handler.dart';
+
+
 
 void main() {
+  FlutterBluePlus.setLogLevel(LogLevel.verbose, color:false);
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -331,66 +337,99 @@ class ProfilePage extends StatelessWidget {
   }
 }
 
-class NavigationPage extends StatefulWidget {
+class NavigationPage extends StatelessWidget {
   @override
-  _NavigationPageState createState() => _NavigationPageState();
+  Widget build(BuildContext context){
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Please choose your destination'),
+        ),
+      body: Center(
+        child: Column(
+          children: [SizedBox(
+            height:50,
+            width: 300,
+            child: ElevatedButton(
+              onPressed: (){
+                Navigator.push(
+                  context, MaterialPageRoute(builder: (context) => BluetoothSetup())
+                );
+              }, 
+              child: const Text("Bluetooth example",
+                        style: TextStyle(fontSize: 18)),))],
+          ),
+      )
+    );
+  }
 }
 
-class _NavigationPageState extends State<NavigationPage> {
-  GoogleMapController? mapController;
-  final List<String> _addresses = [];
-  final TextEditingController _addressController = TextEditingController();
-
-  void _onMapCreated(GoogleMapController controller) {
-    mapController = controller;
-  }
-
-  void _addAddress() {
-    if (_addresses.length < 3 && _addressController.text.isNotEmpty) {
-      setState(() {
-        _addresses.add(_addressController.text);
-        _addressController.clear();
-      });
-    }
-  }
+class BluetoothSetup extends StatefulWidget {
+  const BluetoothSetup({super.key});
 
   @override
-  void dispose() {
-    _addressController.dispose();
-    super.dispose();
+  State<BluetoothSetup> createState() => _BluetoothSetupState();
+}
+
+class _BluetoothSetupState extends State<BluetoothSetup> {
+  final BleController bleController = Get.put(BleController());
+
+  Future<void> _requestPermissions() async {
+    if (await Permission.bluetoothScan.request().isGranted &&
+        await Permission.locationWhenInUse.request().isGranted) {
+      // Permissions are granted
+    } else {
+      Get.snackbar("Permission Denied", "Bluetooth and Location permissions are required to scan for devices.",
+          snackPosition: SnackPosition.BOTTOM);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Select your destination'),
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
+      appBar: AppBar(title: Text("BLE SCANNER")),
+      body: GetBuilder<BleController>(
+        init: bleController,
+        builder: (BleController controller) {
+          return Center(
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                TextField(
-                  controller: _addressController,
-                  decoration: InputDecoration(
-                    labelText: 'Enter address',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
+                Obx(() {
+                  if (controller.scanResults.isEmpty) {
+                    return Center(child: Text("No Device Found"));
+                  } else {
+                    return Expanded(
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: controller.scanResults.length,
+                        itemBuilder: (context, index) {
+                          final data = controller.scanResults[index];
+                          return Card(
+                            elevation: 2,
+                            child: ListTile(
+                              title: Text(data.device.platformName),
+                              subtitle: Text(data.device.remoteId.toString()),
+                              trailing: Text(data.rssi.toString()),
+                              onTap: () => controller.connectToDevice(data.device),
+                            ),
+                          );
+                        },
+                      ),
+                    );
+                  }
+                }),
                 SizedBox(height: 10),
                 ElevatedButton(
-                  onPressed: _addAddress,
-                  child: Text('Add Address'),
+                  onPressed: () async {
+                    await _requestPermissions();
+                    controller.scanDevices();
+                  },
+                  child: Text("SCAN"),
                 ),
-                SizedBox(height: 10),
-                Text('Saved Addresses:'),
-                for (var address in _addresses) Text(address),
               ],
             ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
