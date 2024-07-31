@@ -65,7 +65,7 @@ class LoginPage extends StatelessWidget {
                 child: TextField(
                   decoration: InputDecoration(
                     border: OutlineInputBorder(),
-                    labelText: "username",
+                    labelText: "Username",
                     icon: Icon(Icons.person),
                   ),
                 ),
@@ -243,6 +243,7 @@ class BluetoothSelect extends StatelessWidget {
   }
 }
 
+
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
 
@@ -254,7 +255,11 @@ class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
   late GoogleMapController mapController;
 
-  final LatLng _center = const LatLng(1.3412841720874797, 103.96375602825361);
+  static const _school = LatLng(1.3412841720874797, 103.96375602825361);
+  static const _market = LatLng(1.3352386703088892, 103.96330804919691);
+  static const _home = LatLng(1.3423764200463901, 103.96427544320599);
+
+  var markers;
 
   void _onMapCreated(GoogleMapController controller) {
     mapController = controller;
@@ -264,10 +269,28 @@ class _HomePageState extends State<HomePage> {
         GoogleMap(
           onMapCreated: _onMapCreated,
           initialCameraPosition: CameraPosition(
-            target: _center,
+            target: _home,
             zoom: 17.0,
           ),
+          markers:{
+            const Marker(
+              markerId: MarkerId('School'), 
+              icon: BitmapDescriptor.defaultMarker, 
+              position: _school),  
+
+            const Marker(
+              markerId: MarkerId('Market'),
+              icon: BitmapDescriptor.defaultMarker, 
+              position: _market ),          
+
+            const Marker(
+              markerId: MarkerId('Home'),
+              icon: BitmapDescriptor.defaultMarker, 
+              position: _home
+              )
+          }
         ),
+      
         ProfilePage(),
       ];
 
