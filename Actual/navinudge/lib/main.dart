@@ -163,6 +163,19 @@ class SetUp extends StatelessWidget {
                         style: TextStyle(fontSize: 18)),
                   ),
                 ),
+                SizedBox(
+                  height:50,
+                  width:300,
+                  child: FilledButton(
+                    onPressed: (){
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const BluetoothSetup()));
+                    },
+                    child: const Text('BT DEBUG MODE!', style: TextStyle(fontSize: 20))
+                  )
+                ),
               ],
             ),
             const SizedBox(height: 20),
