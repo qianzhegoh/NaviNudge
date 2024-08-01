@@ -5,7 +5,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
-import 'ble_controller.dart';
+import 'utils/ble_controller.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 
