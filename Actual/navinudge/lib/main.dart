@@ -163,6 +163,7 @@ class SetUp extends StatelessWidget {
                         style: TextStyle(fontSize: 18)),
                   ),
                 ),
+                SizedBox(height: 10),
                 SizedBox(
                   height:50,
                   width:300,
@@ -399,7 +400,7 @@ class _BluetoothSetupState extends State<BluetoothSetup> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("BLE SCANNER")),
+      appBar: AppBar(title: Text("Bluetooth Debug")),
       body: GetBuilder<BleController>(
         init: bleController,
         builder: (BleController controller) {
@@ -423,7 +424,10 @@ class _BluetoothSetupState extends State<BluetoothSetup> {
                               title: Text(data.device.platformName),
                               subtitle: Text(data.device.remoteId.toString()),
                               trailing: Text(data.rssi.toString()),
-                              onTap: () => controller.connectToDevice(data.device),
+                              onTap: () {
+                                Navigator.push(
+                                  context, MaterialPageRoute(builder: (context) => debugIMUData()));
+                                controller.connectToDevice(data.device);},
                             ),
                           );
                         },
@@ -444,6 +448,36 @@ class _BluetoothSetupState extends State<BluetoothSetup> {
           );
         },
       ),
+    );
+  }
+}
+
+class DebugIMUData extends StatelessWidget {
+  @override
+  Widget build(BuildContext context){
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('IMU Data'),
+        ),
+      body:  Obx(() {
+              if (BleController.connectedDevices.value == null) {
+                return Text('No device connected');
+              } else {
+                return Column(
+                  children: [
+                    Text('Connected to: ${BleController.connectedDevice.value?.name}'),
+                    Text('Received Data: ${BleController.receivedData.value}'),
+                    ElevatedButton(
+                      onPressed: () {
+                        BleController.triggerActionOnDevice(
+                            BleController.connectedDevice.value!);
+                      },
+                      child: Text('Trigger Action'),
+                    ),
+                  ],
+                );
+              }
+            }),
     );
   }
 }
