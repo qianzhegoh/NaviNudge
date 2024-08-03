@@ -11,7 +11,7 @@ class BluetoothSetup extends StatefulWidget {
 }
 
 class _BluetoothSetupState extends State<BluetoothSetup> {
-  final BleController bleController = Get.put(BleController());
+  final BleController bleController = Get.put(BleController(), permanent: true);
 
   Future<void> _requestPermissions() async {
     if (await Permission.bluetoothScan.request().isGranted &&
@@ -79,6 +79,8 @@ class _BluetoothSetupState extends State<BluetoothSetup> {
 }
 
 class DebugIMUData extends StatelessWidget {
+  final BleController bleController = Get.put(BleController(), permanent: true);
+
   @override
   Widget build(BuildContext context){
     return Scaffold(
@@ -86,23 +88,26 @@ class DebugIMUData extends StatelessWidget {
         title: const Text('Connected Device Debug Screen'),
         ),
       body:
-        Center(child: Text('No device connected')),
-        // if (BleController.connectedDevices.value == null) {
-        //   return Text('No device connected');
-        // } else {
-        //   return Column(
-        //     children: [
-        //       Text('Connected to: ${BleController.connectedDevice.value?.name}'),
-        //       Text('Received Data: ${BleController.receivedData.value}'),
-        //       ElevatedButton(
-        //         onPressed: () {
-        //           BleController.triggerActionOnDevice("test");
-        //         },
-        //         child: Text('Trigger Action'),
-        //       ),
-        //     ],
-        //   );
-        // }
+        Obx(() {
+          if (bleController.leftConnected.value == false) {
+            return Text('No device connected');
+          } else {
+            return Column(
+              children: [
+                Center(child: Text('Left node mode: ${bleController.leftMode.value}')),
+                Center(child: Text('Right node mode: ${bleController.rightMode.value}')),
+                Center(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      bleController.readMode();
+                    },
+                    child: Text('Read modes'),
+                  ),
+                ),
+              ],
+            );
+          }
+        })
     );
   }
 }

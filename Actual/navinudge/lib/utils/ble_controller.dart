@@ -1,11 +1,22 @@
+import 'dart:ffi';
+
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class BleController extends GetxController {
+  // Observable variables
   var scanResults = <ScanResult>[].obs;
-  BluetoothDevice? leftNode;
-  BluetoothDevice? rightNode;
+  var leftConnected = false.obs;
+  var rightConnected = false.obs;
+  var leftQuaternion = <Float>[].obs;
+  var rightQuaternion = <Float>[].obs;
+  var leftMode = (-1).obs;
+  var rightMode = (-1).obs;
+
+  // Private variables
+  BluetoothDevice? _leftNode;
+  BluetoothDevice? _rightNode;
 
   @override
   void onInit() {
@@ -25,8 +36,8 @@ class BleController extends GetxController {
     }
   }
 
-
   // This method is called by a GUI menu to connect to the Device
+  // When the connection is called, each device gets its own connection state listener, which will mutate the variables in this class based on connection state
   Future<void> connectToDevice(BluetoothDevice device) async {
     try {
       await device.connect(timeout: Duration(seconds: 15));
@@ -34,15 +45,22 @@ class BleController extends GetxController {
         if (state == BluetoothConnectionState.connected) {
           print("Device connected: ${device.platformName}");
           if (device.advName.contains("Left")) {
-            leftNode = device;
+            _leftNode = device;
+            leftConnected.value = true;
           } else if (device.advName.contains("Right")) {
-            rightNode = device;
+            _rightNode = device;
+            rightConnected.value = true;
           }
-          
-          // Once device is connected, open up the "firehose" stream
+          // Once device is connected, read the full list of services and characteristics
         } else {
+          if (device.advName.contains("Left")) {
+            _leftNode = null;
+            leftConnected.value = false;
+          } else if (device.advName.contains("Right")) {
+            _rightNode = null;
+            rightConnected.value = false;
+          }
           print("Device disconnected: ${device.platformName}");
-          leftNode = null;
         }
       });
     } catch (e) {
@@ -50,19 +68,20 @@ class BleController extends GetxController {
     }
   }
 
-  Future<void> readCharacteristic(BluetoothDevice device, Guid characteristicId) async {
+  Future<List<int>?> _readCharacteristic(BluetoothDevice device, Guid characteristicId) async {
     List<BluetoothService> services = await device.discoverServices();
     for (BluetoothService service in services) {
       for (BluetoothCharacteristic characteristic in service.characteristics) {
         if (characteristic.uuid == characteristicId) {
           List<int> value = await characteristic.read();
-          print('Read value: $value');
+          return value;
         }
       }
     }
+    return null;
   }
 
-  Future<void> writeCharacteristic(BluetoothDevice device, Guid characteristicId, List<int> data) async {
+  Future<void> _writeCharacteristic(BluetoothDevice device, Guid characteristicId, List<int> data) async {
     List<BluetoothService> services = await device.discoverServices();
     for (BluetoothService service in services) {
       for (BluetoothCharacteristic characteristic in service.characteristics) {
@@ -70,6 +89,21 @@ class BleController extends GetxController {
           await characteristic.write(data);
           print('Data written successfully.');
         }
+      }
+    }
+  }
+
+  void readMode() async {
+    if (_leftNode != null) {
+      final modeVal = (await _readCharacteristic(_leftNode!, Guid.fromString("2A3F")));
+      if (modeVal != null) {
+        leftMode.value = modeVal[0];
+      }
+    }
+    if (_rightNode != null) {
+      final modeVal = (await _readCharacteristic(_rightNode!, Guid.fromString("2A3F")));
+      if (modeVal != null) {
+        rightMode.value = modeVal[0];
       }
     }
   }
