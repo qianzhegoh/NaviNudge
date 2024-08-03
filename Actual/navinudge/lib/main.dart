@@ -4,9 +4,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:geolocator/geolocator.dart' as geolocator;
+import 'package:geolocator_platform_interface/src/enums/location_accuracy.dart' as platform_interface; 
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
+
 
 
 void main() {
@@ -318,7 +321,7 @@ class _HomePageState extends State<HomePage> {
             child: FloatingActionButton.extended(
               onPressed: () {
                 Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => GoogleMapPage()));
+                    MaterialPageRoute(builder: (context) => LocationTracker()));
               },
               icon: Icon(Icons.play_arrow),
               label: Text("Start Navigation")
@@ -361,22 +364,163 @@ class ProfilePage extends StatelessWidget {
   }
 }
 
-class GoogleMapPage extends StatefulWidget {
-  const GoogleMapPage({super.key});
-
+class LocationTracker extends StatefulWidget {
   @override
-  State<GoogleMapPage> createState() => NavigationPage();
+  _LocationTrackerState createState() => _LocationTrackerState();
 }
 
-class NavigationPage extends State<GoogleMapPage> {
+class _LocationTrackerState extends State<LocationTracker> {
+  geolocator.Position? _currentPosition;
+  String _currentAddress = 'Fetching location...';
 
-  final Location location = Location();
-  LatLng? currentPosition;
-
+  @override
   void initState() {
-    WidgetsBinding.instance
-        .addPostFrameCallback((_) async => await fetchLocationUpdates());
+    super.initState();
+    _getCurrentLocation();
   }
+
+  Future<void> _getCurrentLocation() async {
+    bool serviceEnabled;
+    geolocator.LocationPermission permission;
+
+    // Test if location services are enabled.
+    serviceEnabled = await geolocator.Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      // Location services are not enabled, open settings
+      await geolocator.Geolocator.openLocationSettings();
+      return Future.error('Location services are disabled.');
+    }
+
+    permission = await geolocator.Geolocator.checkPermission();
+    if (permission == geolocator.LocationPermission.denied) {
+      permission = await geolocator.Geolocator.requestPermission();
+      if (permission == geolocator.LocationPermission.denied) {
+        // Permissions are denied, next time you could try requesting permissions again
+        return Future.error('Location permissions are denied');
+      }
+    }
+
+    if (permission == geolocator.LocationPermission.deniedForever) {
+      // Permissions are denied forever, handle appropriately
+      return Future.error(
+        'Location permissions are permanently denied, we cannot request permissions.');
+    }
+
+    // When we reach here, permissions are granted and we can continue accessing the position of the device.
+    geolocator.Geolocator.getPositionStream(
+      locationSettings: geolocator.LocationSettings(
+        accuracy: platform_interface.LocationAccuracy.high,
+        distanceFilter: 10,
+      ),
+    ).listen((geolocator.Position position) {
+      setState(() {
+        _currentPosition = position;
+        _currentAddress =
+            'Lat: ${position.latitude}, Long: ${position.longitude}';
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Location Tracker'),
+      ),
+      body: Center(
+        child: Text(
+          _currentAddress,
+          style: TextStyle(fontSize: 24),
+        ),
+      ),
+    );
+  }
+}
+//somewhat working code w 1 red issue
+// class LocationTracker extends StatefulWidget {
+//   @override
+//   _LocationTrackerState createState() => _LocationTrackerState();
+// }
+
+// class _LocationTrackerState extends State<LocationTracker> {
+//   Position? _currentPosition;
+//   String _currentAddress = 'Fetching location...';
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     _getCurrentLocation();
+//   }
+
+//   Future<void> _getCurrentLocation() async {
+//     bool serviceEnabled;
+//     LocationPermission permission;
+
+//     serviceEnabled = await Geolocator.isLocationServiceEnabled();
+//     if (!serviceEnabled) {
+//       await Geolocator.openLocationSettings();
+//       return Future.error('Location services are disabled.');
+//     }
+
+//     permission = await Geolocator.checkPermission();
+//     if (permission == LocationPermission.denied) {
+//       permission = await Geolocator.requestPermission();
+//       if (permission == LocationPermission.denied) {
+//         return Future.error('Location permissions are denied.');
+//       }
+//     }
+
+//     if (permission == LocationPermission.deniedForever) {
+//       return Future.error(
+//           'Location permissions are permanently denied, we cannot request permissions.');
+//     }
+
+//   Geolocator.getPositionStream(
+//     locationSettings: LocationSettings(
+//     accuracy: LocationAccuracy.high,
+//     distanceFilter: 10,
+//   ),
+// ).listen((Position position) {
+//   setState(() {
+//     _currentPosition = position;
+//     _currentAddress =
+//         'Lat: ${position.latitude}, Long: ${position.longitude}';
+//   });
+// });
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(
+//         title: Text('Location Tracker'),
+//       ),
+//       body: Center(
+//         child: Text(
+//           _currentAddress,
+//           style: TextStyle(fontSize: 24),
+//         ),
+//       ),
+//     );
+//   }
+// }
+ //newest working code ends here
+
+// class GoogleMapPage extends StatefulWidget {
+//   const GoogleMapPage({super.key});
+
+//   @override
+//   State<GoogleMapPage> createState() => NavigationPage();
+// }
+
+// class NavigationPage extends State<GoogleMapPage> {
+
+//   final Location location = Location();
+//   LatLng? currentPosition;
+
+//   void initState() {
+//     WidgetsBinding.instance
+//         .addPostFrameCallback((_) async => await fetchLocationUpdates());
+  // }
 
   // Future<void> initializeMap() async {
   //   await fetchLocationUpdates();
@@ -384,41 +528,41 @@ class NavigationPage extends State<GoogleMapPage> {
   //   // generatePolyLineFromPoints(coordinates);
   // }
 
-  Future <void> fetchLocationUpdates() async {
-    bool serviceEnabled;
-    PermissionStatus permissionGranted; 
-    serviceEnabled = await location.serviceEnabled();
-    serviceEnabled = await location.serviceEnabled();
-    if (!serviceEnabled) {
-      serviceEnabled = await location.requestService();
-      if (!serviceEnabled) {
-        return;
-      }
-    }
+  // Future <void> fetchLocationUpdates() async {
+  //   bool serviceEnabled;
+  //   PermissionStatus permissionGranted; 
+  //   serviceEnabled = await location.serviceEnabled();
+  //   serviceEnabled = await location.serviceEnabled();
+  //   if (!serviceEnabled) {
+  //     serviceEnabled = await location.requestService();
+  //     if (!serviceEnabled) {
+  //       return;
+  //     }
+  //   }
 
-    permissionGranted = await location.hasPermission();
-    if (permissionGranted == PermissionStatus.denied) {
-      permissionGranted = await location.requestPermission();
-      if (permissionGranted != PermissionStatus.granted) {
-        return;
-      }
-    }
+  //   permissionGranted = await location.hasPermission();
+  //   if (permissionGranted == PermissionStatus.denied) {
+  //     permissionGranted = await location.requestPermission();
+  //     if (permissionGranted != PermissionStatus.granted) {
+  //       return;
+  //     }
+  //   }
 
 
     
-    location.onLocationChanged.listen((currentLocation) {
-      if (currentLocation.latitude != null &&
-          currentLocation.longitude != null) {
-        setState(() {
-          currentPosition = LatLng(
-            currentLocation.latitude!,
-            currentLocation.longitude!,
-          );
-        });
-      }
-    });
+  //   location.onLocationChanged.listen((currentLocation) {
+  //     if (currentLocation.latitude != null &&
+  //         currentLocation.longitude != null) {
+  //       setState(() {
+  //         currentPosition = LatLng(
+  //           currentLocation.latitude!,
+  //           currentLocation.longitude!,
+  //         );
+  //       });
+  //     }
+  //   });
 
-  }
+  // }
 
 
 
@@ -460,35 +604,35 @@ class NavigationPage extends State<GoogleMapPage> {
   //   );
   // }
 
-  @override
-  Widget build(BuildContext context) => Scaffold(
-        body: currentPosition == null
-            ? const Center(child: CircularProgressIndicator())
-            : GoogleMap(
-                initialCameraPosition: const CameraPosition(
-                  target: _HomePageState._home,
-                  zoom: 13,
-                ),
-                markers: {
-                  Marker(
-                    markerId: const MarkerId('currentLocation'),
-                    icon: BitmapDescriptor.defaultMarker,
-                    position: currentPosition!,
-                  ),
-                  const Marker(
-                    markerId: MarkerId('sourceLocation'),
-                    icon: BitmapDescriptor.defaultMarker,
-                    position: _HomePageState._home,
-                  ),
-                  const Marker(
-                    markerId: MarkerId('destinationLocation'),
-                    icon: BitmapDescriptor.defaultMarker,
-                    position: _HomePageState._market,
-                  )
-                },
-              ),
-      );
+  // @override
+  // Widget build(BuildContext context) => Scaffold(
+  //       body: currentPosition == null
+  //           ? const Center(child: CircularProgressIndicator())
+  //           : GoogleMap(
+  //               initialCameraPosition: const CameraPosition(
+  //                 target: _HomePageState._home,
+  //                 zoom: 13,
+  //               ),
+  //               markers: {
+  //                 Marker(
+  //                   markerId: const MarkerId('currentLocation'),
+  //                   icon: BitmapDescriptor.defaultMarker,
+  //                   position: currentPosition!,
+  //                 ),
+  //                 const Marker(
+  //                   markerId: MarkerId('sourceLocation'),
+  //                   icon: BitmapDescriptor.defaultMarker,
+  //                   position: _HomePageState._home,
+  //                 ),
+  //                 const Marker(
+  //                   markerId: MarkerId('destinationLocation'),
+  //                   icon: BitmapDescriptor.defaultMarker,
+  //                   position: _HomePageState._market,
+  //                 )
+  //               },
+  //             ),
+  //     );
 
-}
+// }
 
 
