@@ -5,6 +5,12 @@ import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class BleController extends GetxController {
+  // Constants
+  final modeGUID = Guid.fromString("2A3F");
+  final posGUID = Guid.fromString("2A30");
+  final currentBearingGUID = Guid.fromString("2A5D");
+  final futureBearingGUID = Guid.fromString("2A68");
+
   // Observable variables
   var scanResults = <ScanResult>[].obs;
   var leftConnected = false.obs;
@@ -95,22 +101,27 @@ class BleController extends GetxController {
 
   void readMode() async {
     if (_leftNode != null) {
-      final modeVal = (await _readCharacteristic(_leftNode!, Guid.fromString("2A3F")));
+      final modeVal = (await _readCharacteristic(_leftNode!, modeGUID));
       if (modeVal != null) {
         leftMode.value = modeVal[0];
       }
     }
     if (_rightNode != null) {
-      final modeVal = (await _readCharacteristic(_rightNode!, Guid.fromString("2A3F")));
+      final modeVal = (await _readCharacteristic(_rightNode!, modeGUID));
       if (modeVal != null) {
         rightMode.value = modeVal[0];
       }
     }
   }
 
-  // void enableIMULeft() {
-  //   if (leftNode != null) {
-  //     // Start the device's IMU data "firehose" by switching characteristic 0x2A3F (mode) to 2
-  //   }
-  // }
+  void enableIMULeft() async {
+    if (_leftNode != null) {
+      // Start the device's IMU data "firehose" by switching characteristic 0x2A3F (mode) to 2
+      _writeCharacteristic(_leftNode!, modeGUID, [2]);
+    }
+    if (_rightNode != null) {
+      // Start the device's IMU data "firehose" by switching characteristic 0x2A3F (mode) to 2
+      _writeCharacteristic(_rightNode!, modeGUID, [2]);
+    }
+  }
 }

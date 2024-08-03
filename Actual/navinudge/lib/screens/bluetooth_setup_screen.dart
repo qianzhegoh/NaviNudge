@@ -100,8 +100,9 @@ class DebugIMUData extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: () {
                       bleController.readMode();
+                      bleController.enableIMULeft();
                     },
-                    child: Text('Read modes'),
+                    child: Text('Read modes and turn on IMU'),
                   ),
                 ),
               ],
