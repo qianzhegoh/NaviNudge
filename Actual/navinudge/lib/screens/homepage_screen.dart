@@ -46,8 +46,7 @@ class _HomePageState extends State<HomePage> {
             left: MediaQuery.of(context).size.width / 2 - 80,
             child: FloatingActionButton.extended(
               onPressed: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => NavigationPage()));
+                Navigator.push(context, MaterialPageRoute(builder: (context) => NavigationPage()));
               },
               icon: Icon(Icons.play_arrow),
               label: Text("Start Navigation")

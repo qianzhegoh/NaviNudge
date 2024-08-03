@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class BleController extends GetxController {
-  FlutterBluePlus ble = FlutterBluePlus();
   var scanResults = <ScanResult>[].obs;
   BluetoothDevice? leftNode;
   BluetoothDevice? rightNode;

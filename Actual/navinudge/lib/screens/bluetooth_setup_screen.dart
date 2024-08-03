@@ -51,9 +51,9 @@ class _BluetoothSetupState extends State<BluetoothSetup> {
                               subtitle: Text(data.device.remoteId.toString()),
                               trailing: Text(data.rssi.toString()),
                               onTap: () {
-                                Navigator.push(
-                                  context, MaterialPageRoute(builder: (context) => DebugIMUData()));
-                                controller.connectToDevice(data.device);},
+                                controller.connectToDevice(data.device);
+                                Navigator.push(context, MaterialPageRoute(builder: (context) => DebugIMUData()));
+                                },
                             ),
                           );
                         },
@@ -67,7 +67,7 @@ class _BluetoothSetupState extends State<BluetoothSetup> {
                     await _requestPermissions();
                     controller.scanDevices();
                   },
-                  child: Text("SCAN"),
+                  child: Text("Scan for NaviNudge Devices"),
                 ),
               ],
             ),
@@ -83,10 +83,10 @@ class DebugIMUData extends StatelessWidget {
   Widget build(BuildContext context){
     return Scaffold(
       appBar: AppBar(
-        title: const Text('IMU Data'),
+        title: const Text('Connected Device Debug Screen'),
         ),
-      body: Obx(() {
-        return Text('No device connected');
+      body:
+        Center(child: Text('No device connected')),
         // if (BleController.connectedDevices.value == null) {
         //   return Text('No device connected');
         // } else {
@@ -103,7 +103,6 @@ class DebugIMUData extends StatelessWidget {
         //     ],
         //   );
         // }
-            }),
     );
   }
 }
