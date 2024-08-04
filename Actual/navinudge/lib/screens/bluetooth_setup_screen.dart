@@ -94,15 +94,15 @@ class DebugIMUData extends StatelessWidget {
           } else {
             return Column(
               children: [
-                Center(child: Text('Left node mode: ${bleController.leftMode.value}')),
-                Center(child: Text('Right node mode: ${bleController.rightMode.value}')),
+                Center(child: Text('Left node mode: ${bleController.leftQuaternion.value}')),
+                Center(child: Text('Right node mode: ${bleController.rightQuaternion.value}')),
                 Center(
                   child: ElevatedButton(
                     onPressed: () {
                       bleController.readMode();
-                      bleController.enableIMULeft();
+                      bleController.enableIMUBoth();
                     },
-                    child: Text('Read modes and turn on IMU'),
+                    child: Text('Turn on both IMUs'),
                   ),
                 ),
               ],
