@@ -19,6 +19,7 @@ dependencies:
   flutter_blue_plus: ^1.32.11
   permission_handler: ^11.3.1
   get: ^4.6.6
+  vector_math: ^2.1.4
 
 dev_dependencies:
   flutter_test:

@@ -92,20 +92,25 @@ class DebugIMUData extends StatelessWidget {
           if (bleController.leftConnected.value == false) {
             return Text('No device connected');
           } else {
-            return Column(
-              children: [
-                Center(child: Text('Left node mode: ${bleController.leftQuaternion.value}')),
-                Center(child: Text('Right node mode: ${bleController.rightQuaternion.value}')),
-                Center(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      bleController.readMode();
-                      bleController.enableIMUBoth();
-                    },
-                    child: Text('Turn on both IMUs'),
+            return Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                children: [
+                  Center(child: Text('Left node quality: ${bleController.leftQuality.value}')),
+                  Center(child: Text('Right node quality: ${bleController.rightQuality.value}')),
+                  Center(child: Text('Within desired positions: ${bleController.acceptableGait.value}')),
+                  Center(child: Text('Computed angle difference: ${bleController.quaternionDifferenceAngles.value}')),
+                  Center(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        bleController.readMode();
+                        bleController.enableIMUBoth();
+                      },
+                      child: Text('Turn on both IMUs'),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             );
           }
         })

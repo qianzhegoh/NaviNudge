@@ -1,8 +1,10 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:vector_math/vector_math.dart';
 
 class BleController extends GetxController {
   // Constants
@@ -15,8 +17,15 @@ class BleController extends GetxController {
   var scanResults = <ScanResult>[].obs;
   var leftConnected = false.obs;
   var rightConnected = false.obs;
-  var leftQuaternion = <double>[].obs; // The format for position quaternions are: Quality of signal, Real, i, j ,k
-  var rightQuaternion = <double>[].obs;
+  var leftQuality = 0.obs; // Quality describes the quality of the positioning data given by the IMU. 0 is worst and 3 is best.
+  var rightQuality = 0.obs;
+  // var leftQuaternion = <double>[].obs; // The format for position quaternions are: Quality of signal, Real, i, j ,k
+  // var rightQuaternion = <double>[].obs;
+  var leftQuaternion = Quaternion(0, 0, 0, 1).obs; // The format for position quaternions is: i, j ,k, real
+  var rightQuaternion = Quaternion(0, 0, 0, 1).obs;
+  var quaternionDifference = Quaternion(0, 0, 0, 1).obs;
+  var quaternionDifferenceAngles = [0.0,0.0,0.0].obs; // The format is yaw, pitch, roll
+  var acceptableGait = false.obs; // When the gait is acceptable for a bearing reading
   var leftMode = (-1).obs;
   var rightMode = (-1).obs;
 
@@ -81,10 +90,16 @@ class BleController extends GetxController {
             _leftNode = null;
             _leftNodeIMU = null;
             leftConnected.value = false;
+            leftQuality.value = -1;
+            leftMode.value = -1;
+            leftQuaternion.value.setValues(0, 0, 0, 1);
           } else if (device.advName.contains("Right")) {
             _rightNode = null;
             _rightNodeIMU = null;
             rightConnected.value = false;
+            rightQuality.value = -1;
+            rightMode.value = -1;
+            rightQuaternion.value.setValues(0, 0, 0, 1);
           }
           print("Device disconnected: ${device.platformName}");
         }
@@ -119,7 +134,7 @@ class BleController extends GetxController {
     }
   }
 
-  void readMode() async {
+  Future<void> readMode() async {
     if (_leftNode != null) {
       final modeVal = (await _readCharacteristic(_leftNode!, modeGUID));
       if (modeVal != null) {
@@ -134,7 +149,39 @@ class BleController extends GetxController {
     }
   }
 
-  void enableIMUBoth() async {
+  List<double> quaternionToEuler(Quaternion q, bool degrees) {
+    final qr = q.w; final qi = q.x; final qj = q.y; final qk = q.z;
+    final sqr = pow(qr,2);
+    final sqi = pow(qi,2);
+    final sqj = pow(qj,2);
+    final sqk = pow(qk,2);
+
+    var returnValue = [0.0,0.0,0.0];
+
+    if (degrees) {
+      returnValue = [
+        atan2(2.0 * (qi * qj + qk * qr), (sqi - sqj - sqk + sqr)) * radians2Degrees,
+        asin(-2.0 * (qi * qk - qj * qr) / (sqi + sqj + sqk + sqr)) * radians2Degrees,
+        atan2(2.0 * (qj * qk + qi * qr), (-sqi - sqj + sqk + sqr)) * radians2Degrees
+      ];
+    } else {
+      returnValue = [
+        atan2(2.0 * (qi * qj + qk * qr), (sqi - sqj - sqk + sqr)),
+        asin(-2.0 * (qi * qk - qj * qr) / (sqi + sqj + sqk + sqr)),
+        atan2(2.0 * (qj * qk + qi * qr), (-sqi - sqj + sqk + sqr))
+      ];
+    }
+    quaternionDifferenceAngles.value = returnValue;
+    return returnValue;
+  }
+
+  void computeQuaternionDiff(Quaternion q1, Quaternion q2) {
+    quaternionDifference.value.setFrom(q1 * q2.conjugated());
+    final anglesArray = quaternionToEuler(quaternionDifference.value, true);
+    acceptableGait.value = (anglesArray[0] > 130 || anglesArray[0] < -130) && (anglesArray[1] > -25 || anglesArray[1] < 25) && (anglesArray[2] > -25 || anglesArray[2] < 25);
+  }
+
+  Future<void> enableIMUBoth() async {
     if (_leftNode != null) {
       // Start the device's IMU data "firehose" by switching characteristic 0x2A3F (mode) to 2
       _writeCharacteristic(_leftNode!, modeGUID, [2]);
@@ -147,12 +194,18 @@ class BleController extends GetxController {
               i: double.parse(decodedValue[i])
           };
           if (arrayValues.length == 5) {
-            leftQuaternion.value = [arrayValues[0]!, arrayValues[1]!, arrayValues[2]!, arrayValues[3]!, arrayValues[4]!];
+            leftQuality.value = arrayValues[0]!.toInt();
+            leftQuaternion.value.setValues(arrayValues[2]!, arrayValues[3]!, arrayValues[4]!, arrayValues[1]!);
           } else {
             print("BLE transmission fault! IMU data is not 5 segments");
           }
         } catch (e) {
           print("BLE transmission fault! Unable to decode IMU data: $e");
+        }
+
+        // Another opportunity here at (onValueReceived) is to compute the difference every time the left side receives a computation
+        if (leftQuaternion.value != Quaternion(0, 0, 0, 1) && rightQuaternion.value != Quaternion(0, 0, 0, 1)) {
+          computeQuaternionDiff(leftQuaternion.value, rightQuaternion.value);
         }
       });
       await _leftNodeIMU!.setNotifyValue(true);
@@ -169,7 +222,9 @@ class BleController extends GetxController {
               i: double.parse(decodedValue[i])
           };
           if (arrayValues.length == 5) {
-            rightQuaternion.value = [arrayValues[0]!, arrayValues[1]!, arrayValues[2]!, arrayValues[3]!, arrayValues[4]!];
+            rightQuality.value = arrayValues[0]!.toInt();
+            // = Quaternion(arrayValues[2]!, arrayValues[3]!, arrayValues[4]!, arrayValues[1]!)
+            rightQuaternion.value.setValues(arrayValues[2]!, arrayValues[3]!, arrayValues[4]!, arrayValues[1]!);
           } else {
             print("BLE transmission fault! IMU data is not 5 segments");
           }
