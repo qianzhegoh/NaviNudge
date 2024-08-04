@@ -12,6 +12,7 @@ class BleController extends GetxController {
   final posGUID = Guid.fromString("2A30");
   final currentBearingGUID = Guid.fromString("2A5D");
   final futureBearingGUID = Guid.fromString("2A68");
+  final referenceNorthQuaternion = Quaternion(1, 0, 0, 0); // This Quaternion indicates North in an ordinary sensor orientation (sensor is facing up on the table, Y is facing North, X is facing East)
 
   // Observable variables
   var scanResults = <ScanResult>[].obs;
@@ -28,6 +29,7 @@ class BleController extends GetxController {
   var acceptableGait = false.obs; // When the gait is acceptable for a bearing reading
   var leftMode = (-1).obs;
   var rightMode = (-1).obs;
+  var currentBearing = (0.0).obs; // Format: compass bearing that goes from 0 to 359, where 0 is North
 
   // Private variables
   BluetoothDevice? _leftNode;
@@ -181,6 +183,25 @@ class BleController extends GetxController {
     acceptableGait.value = (anglesArray[0] > 130 || anglesArray[0] < -130) && (anglesArray[1] > -25 || anglesArray[1] < 25) && (anglesArray[2] > -25 || anglesArray[2] < 25);
   }
 
+  double computeBearing(Quaternion q, bool degrees) {
+    final computedQuaternion = q * referenceNorthQuaternion * q.conjugated();
+    var returnValue = 0.0;
+    if (degrees) {
+      if (computedQuaternion.x >= 0) {
+        returnValue = atan2(computedQuaternion.x, computedQuaternion.y) * radians2Degrees;
+      } else {
+        returnValue = 360 + atan2(computedQuaternion.x, computedQuaternion.y) * radians2Degrees;
+      }
+    } else {
+      if (computedQuaternion.x >= 0) {
+        returnValue = atan2(computedQuaternion.x, computedQuaternion.y);
+      } else {
+        returnValue = 2 * pi + atan2(computedQuaternion.x, computedQuaternion.y);
+      }
+    }
+    return returnValue;
+  }
+
   Future<void> enableIMUBoth() async {
     if (_leftNode != null) {
       // Start the device's IMU data "firehose" by switching characteristic 0x2A3F (mode) to 2
@@ -205,7 +226,12 @@ class BleController extends GetxController {
 
         // Another opportunity here at (onValueReceived) is to compute the difference every time the left side receives a computation
         if (leftQuaternion.value != Quaternion(0, 0, 0, 1) && rightQuaternion.value != Quaternion(0, 0, 0, 1)) {
-          computeQuaternionDiff(leftQuaternion.value, rightQuaternion.value);
+          computeQuaternionDiff(leftQuaternion.value, rightQuaternion.value); // compute difference in quaternions and see if acceptableGait is true
+          if (acceptableGait.value == true) {
+            // Record down the current bearing
+            //TODO we might need to record the timestamp of this information to ensure it is not stale
+            currentBearing.value = computeBearing(leftQuaternion.value, true);
+          }
         }
       });
       await _leftNodeIMU!.setNotifyValue(true);
@@ -223,7 +249,6 @@ class BleController extends GetxController {
           };
           if (arrayValues.length == 5) {
             rightQuality.value = arrayValues[0]!.toInt();
-            // = Quaternion(arrayValues[2]!, arrayValues[3]!, arrayValues[4]!, arrayValues[1]!)
             rightQuaternion.value.setValues(arrayValues[2]!, arrayValues[3]!, arrayValues[4]!, arrayValues[1]!);
           } else {
             print("BLE transmission fault! IMU data is not 5 segments");
@@ -235,4 +260,5 @@ class BleController extends GetxController {
       await _rightNodeIMU!.setNotifyValue(true);
     }
   }
+
 }

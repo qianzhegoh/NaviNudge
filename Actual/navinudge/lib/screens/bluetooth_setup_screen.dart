@@ -89,8 +89,8 @@ class DebugIMUData extends StatelessWidget {
         ),
       body:
         Obx(() {
-          if (bleController.leftConnected.value == false) {
-            return Text('No device connected');
+          if (bleController.leftConnected.value == false || bleController.rightConnected.value == false) {
+            return Text('Please connect to both devices before beginning debug!\n Left device connected: ${bleController.leftConnected.value}.\nRight device connected: ${bleController.rightConnected.value}');
           } else {
             return Padding(
               padding: const EdgeInsets.all(8.0),
@@ -100,6 +100,7 @@ class DebugIMUData extends StatelessWidget {
                   Center(child: Text('Right node quality: ${bleController.rightQuality.value}')),
                   Center(child: Text('Within desired positions: ${bleController.acceptableGait.value}')),
                   Center(child: Text('Computed angle difference: ${bleController.quaternionDifferenceAngles.value}')),
+                  Center(child: Text('Current bearing: ${bleController.currentBearing.value}')),
                   Center(
                     child: ElevatedButton(
                       onPressed: () {
