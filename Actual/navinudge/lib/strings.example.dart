@@ -1,0 +1,1 @@
+const apiKey = "your api key here"; // Please duplicate this file, rename it as strings.dart and fill in your actual API key

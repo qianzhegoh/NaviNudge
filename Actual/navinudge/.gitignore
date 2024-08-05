@@ -1,3 +1,6 @@
+# API key storage
+lib/strings.dart
+
 # Miscellaneous
 *.class
 *.log
