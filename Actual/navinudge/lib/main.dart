@@ -1,11 +1,6 @@
 // ignore_for_file: library_private_types_in_public_api
 
-import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-import 'package:geolocator/geolocator.dart' as geolocator;
-import 'package:geolocator_platform_interface/src/enums/location_accuracy.dart' as platform_interface; 
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 
