@@ -67,6 +67,12 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+         actions: <Widget>[
+          IconButton(onPressed: (){
+            Navigator.push(context, MaterialPageRoute(builder: (context)=>ProfilePage()));
+          }, icon: Icon(Icons.person,))],
+        title: const Text('Home'),),
       body: Stack(children: [
         _pages().elementAt(_selectedIndex),
         Positioned(
@@ -81,20 +87,6 @@ class _HomePageState extends State<HomePage> {
               label: Text("Start Navigation")
             ))
       ]),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _selectedIndex,
-        onDestinationSelected: _onItemTapped,
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
-      ),
     );
   }
 }

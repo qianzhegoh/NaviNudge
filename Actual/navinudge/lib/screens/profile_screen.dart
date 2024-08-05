@@ -20,32 +20,48 @@ class ProfilePage extends StatelessWidget {
             SizedBox(height: 20),
             // Profile name
             Text(
-              'Profile Name',
+              'Josephine Tan',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 20),
+            SizedBox(height: 100),
+            Text('Settings', style:TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            SizedBox(height:10),
             // Caretaker mode button
-            FilledButton(
-              onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context)=>NaviNudgeHomePage()));
-              },
-              child: Text('Caretaker Mode'),
+            SizedBox(
+              height: 50,
+              width: 300,
+              child: FilledButton(
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=>NaviNudgeHomePage()));
+                },
+                child: Text('Caretaker Mode'),
+              ),
             ),
             SizedBox(height: 10),
+            Text('Help', style:TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            SizedBox(height:10),
             // Customer Support button
-            FilledButton(
-              onPressed: () {
-                // Add your onPressed code here!
-              },
-              child: Text('Customer Support'),
+            SizedBox(
+              height:50,
+              width:300,
+              child: FilledButton(
+                onPressed: () {
+                  // Add your onPressed code here!
+                },
+                child: Text('Customer Support'),
+              ),
             ),
             SizedBox(height: 10),
             // App Information button
-            FilledButton(
-              onPressed: () {
-                // Add your onPressed code here!
-              },
-              child: Text('App Information'),
+            SizedBox(
+              height:50,
+              width:300,
+              child: FilledButton(
+                onPressed: () {
+                  // Add your onPressed code here!
+                },
+                child: Text('App Information'),
+              ),
             ),
           ],
         ),
