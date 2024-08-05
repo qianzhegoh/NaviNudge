@@ -31,7 +31,7 @@ class LocationTracker extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
-                  "Current coordinates: ${navController.currentCoordinates.value}",
+                  "Current coordinates: ${navController.currentCoordinates.value}\nGPS accuracy: ${navController.gpsAccuracy.value}",
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -59,7 +59,9 @@ class LocationTracker extends StatelessWidget {
                 ),
                 ElevatedButton(
                   onPressed: () async {
-                    navController.startLocationStream();
+                    await navController.startLocationStream();
+                    await Future.delayed(const Duration(seconds: 3));
+                    navController.beginRouting("730612");
                   },
                   child: Text("Start location updates"),
                 ),

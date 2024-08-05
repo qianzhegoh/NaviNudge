@@ -297,7 +297,7 @@ packages:
     source: hosted
     version: "0.5.4+3"
   google_polyline_algorithm:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: google_polyline_algorithm
       sha256: "357874f00d3f93c3ba1bf4b4d9a154aa9ee87147c068238c1e8392012b686a03"
