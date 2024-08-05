@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:navinudge/screens/destination.dart';
+import 'caretaker_screen.dart';
 
 class ProfilePage extends StatelessWidget {
   @override
@@ -32,7 +32,7 @@ class ProfilePage extends StatelessWidget {
               width: 300,
               child: FilledButton(
                 onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=>NaviNudgeHomePage()));
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=>CaretakerOverview()));
                 },
                 child: Text('Caretaker Mode'),
               ),
