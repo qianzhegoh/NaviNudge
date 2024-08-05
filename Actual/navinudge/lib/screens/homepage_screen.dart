@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'bluetooth_setup_screen.dart';
-import 'location_tracker_screen.dart';
+import 'profile_screen.dart';
+import 'destination.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -64,6 +65,12 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+         actions: <Widget>[
+          IconButton(onPressed: (){
+            Navigator.push(context, MaterialPageRoute(builder: (context)=>ProfilePage()));
+          }, icon: Icon(Icons.person,))],
+        title: const Text('Home'),),
       body: Stack(children: [
         _pages().elementAt(_selectedIndex),
         Positioned(
@@ -72,26 +79,12 @@ class _HomePageState extends State<HomePage> {
             child: FloatingActionButton.extended(
               onPressed: () {
                 Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => LocationTracker()));
+                    MaterialPageRoute(builder: (context) => DestinationSelect()));
               },
               icon: Icon(Icons.play_arrow),
               label: Text("Start Navigation")
             ))
       ]),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _selectedIndex,
-        onDestinationSelected: _onItemTapped,
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
-      ),
     );
   }
 }
@@ -122,21 +115,3 @@ class NavigationPage extends StatelessWidget {
   }
 }
 
-class ProfilePage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Profile'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: const [
-            Text('Profile Content'),
-          ],
-        ),
-      ),
-    );
-  }
-}
