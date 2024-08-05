@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'bluetooth_setup_screen.dart';
-import 'location_tracker_screen.dart';
 import 'profile_screen.dart';
+import 'destination.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -79,7 +79,7 @@ class _HomePageState extends State<HomePage> {
             child: FloatingActionButton.extended(
               onPressed: () {
                 Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => LocationTracker()));
+                    MaterialPageRoute(builder: (context) => DestinationSelect()));
               },
               icon: Icon(Icons.play_arrow),
               label: Text("Start Navigation")
