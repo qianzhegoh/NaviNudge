@@ -85,7 +85,7 @@ class ProfilePage extends StatelessWidget {
                       builder: (BuildContext context) => AlertDialog(
                             title: Text('NaviNudge'),
                             content: Text(
-                                'Version 0.0.1. \n Built by Pan Ziyue, Goh Qian Zhe and Woo Syn Hwee Abigail.'),
+                                'Version 0.0.1.\nBuilt by Pan Ziyue, Goh Qian Zhe and Woo Syn Hwee Abigail.'),
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.of(context).pop(),
