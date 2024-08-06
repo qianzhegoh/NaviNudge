@@ -35,6 +35,7 @@ class _DestinationSelectState extends State<DestinationSelect> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+
               Text(
                 'Choose your intended destination:',
                 style: TextStyle(fontSize: 20),
