@@ -54,9 +54,13 @@ class DestinationSelect extends StatelessWidget {
                 height: 50,
                 width: 300,
                 child: FilledButton.icon(
-                  onPressed: (){},
-                  icon: const Icon(Icons.shopping_cart),
-                  label: const Text('Market'))
+                  onPressed: (){
+                    Navigator.push(context,
+                    MaterialPageRoute(builder: (context)=>Directions())
+                    );
+                  },
+                  icon: const Icon(Icons.fastfood),
+                  label: const Text('McDonald\'s'))
               ),
               SizedBox(height: 10),
               SizedBox(

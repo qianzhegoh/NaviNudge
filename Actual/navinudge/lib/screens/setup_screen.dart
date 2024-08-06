@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import 'real_bluetooth_setup_screen.dart';
-import 'homepage_screen.dart';
 
 class SetUp extends StatelessWidget {
   const SetUp({Key? key}) : super(key: key);

@@ -35,12 +35,12 @@ class _BluetoothSetupState extends State<BluetoothSetup> {
               onPressed: () {
                 if (bleController.leftConnected.value &&
                     bleController.rightConnected.value) {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => HomePage()));
                 } else {
                   final snackBar = SnackBar(content: const Text('NaviNudge devices not connected!'),);
                   ScaffoldMessenger.of(context).showSnackBar(snackBar);
                 }
+                Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => HomePage()));
               },
               icon: Icon(
                 Icons.arrow_forward,
