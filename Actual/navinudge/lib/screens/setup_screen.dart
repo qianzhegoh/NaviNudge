@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'bluetooth_setup_screen.dart';
+import 'real_bluetooth_setup_screen.dart';
 import 'homepage_screen.dart';
 
 class SetUp extends StatelessWidget {
@@ -32,7 +32,7 @@ class SetUp extends StatelessWidget {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const BluetoothSelect()));
+                              builder: (context) => const BluetoothSetup()));
                     },
                     child: const Text("Yes, connect my NaviNudge",
                         style: TextStyle(fontSize: 18)),
@@ -77,73 +77,6 @@ class SetUp extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class BluetoothSelect extends StatelessWidget {
-  const BluetoothSelect({Key? key}) : super(key: key);
-// Developer's note: I am currently updating the code for this to work with our device.
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Connect my NaviNudge")),
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('Found Devices:', style: TextStyle(fontSize: 32)),
-            SizedBox(height: 50),
-            SizedBox(
-                height: 60,
-                width: 300,
-                child: ElevatedButton(
-                    onPressed: () {
-                      final snackBar = SnackBar(
-                          content: const Text('NaviNudge connected'),
-                          action: SnackBarAction(
-                            label: 'Cancel',
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                          ));
-                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                      Navigator.push(context,
-                          MaterialPageRoute(builder: (context) => HomePage()));
-                    },
-                    child: Text("NaviNudge #1368",
-                        style: TextStyle(fontSize: 24)))),
-            SizedBox(height: 20),
-            SizedBox(
-                height: 60,
-                width: 300,
-                child: ElevatedButton(
-                    onPressed: () {},
-                    child: Text("NaviNudge #9858",
-                        style: TextStyle(fontSize: 24)))),
-            SizedBox(height: 20),
-            SizedBox(
-                height: 60,
-                width: 300,
-                child: ElevatedButton(
-                    onPressed: () {},
-                    child: Text("NaviNudge #1309",
-                        style: TextStyle(fontSize: 24)))),
-            SizedBox(height: 20),
-            SizedBox(
-                height: 60,
-                width: 300,
-                child: ElevatedButton(
-                    onPressed: () {},
-                    child: Text("NaviNudge #7879",
-                        style: TextStyle(fontSize: 24))))
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-          onPressed: () {},
-          icon: const Icon(Icons.refresh),
-          label: const Text('Refresh')),
     );
   }
 }
