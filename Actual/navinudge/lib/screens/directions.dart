@@ -9,48 +9,14 @@ import 'package:get/get.dart';
 // Note: by the time this screen fires, the destination picker should have picked by the previous view and sent to this screen
 // for now, this is hardcoded
 
-class Directions extends StatelessWidget {
+class Directions extends StatefulWidget {
+  @override
+  State<Directions> createState() => _DirectionsState();
+}
+
+class _DirectionsState extends State<Directions> {
   final NavigationController navController =
       Get.put(NavigationController(), permanent: true);
-
-  // @override
-  // Widget build(BuildContext context) {
-  //   return Scaffold(
-  //     appBar: AppBar(
-  //       title: Text('Directions'),
-  //     ),
-  //     body: Obx(() {
-  //       return Column(
-  //         mainAxisSize: MainAxisSize.min,
-  //         children: [
-  //           // Profile picture
-  //           CircleAvatar(
-  //             radius: 80,
-  //             backgroundImage: AssetImage(
-  //             'assets/images/walking.png'), // Default avatar image
-  //           ),
-  //           SizedBox(height: 20),
-  //           // Profile name
-  //           Text(
-  //             'Walking. Please use guidance from NaviNudge',
-  //             style: TextStyle(
-  //               fontSize: 24,
-  //               fontWeight: FontWeight.bold,
-  //             ),
-  //             textAlign: TextAlign.center,
-  //           ),
-  //           SizedBox(height: 50),
-  //           TextButton(
-  //               onPressed: () {
-  //                 Navigator.push(context,
-  //                     MaterialPageRoute(builder: (context) => DirectionsBus()));
-  //               },
-  //               child: Text('$navController.onRoute'))
-  //         ],
-  //       );
-  //     }),
-  //   );
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -67,12 +33,11 @@ class Directions extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 80,
-              backgroundImage: AssetImage(
-                  'assets/images/walking.png'), // Default avatar image
+              backgroundImage: AssetImage('${navController.imageURL}'),
             ),
             SizedBox(height: 20),
             Text(
-              'Walking. Please use guidance from NaviNudge',
+              '${navController.userReadableInstructions}',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -83,21 +48,24 @@ class Directions extends StatelessWidget {
             SizedBox(height: 50),
             TextButton(
                 onPressed: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => DirectionsBus()));
+                  navController.advancePath();
+                  // Navigator.push(context,
+                  //     MaterialPageRoute(builder: (context) => DirectionsBus()));
                 },
-                child: Text('${navController.onRoute}')),
-            // Text(
-            //   "Current coordinates: ${navController.currentCoordinates}\nGPS accuracy: ${navController.gpsAccuracy}",
-            //   style: TextStyle(
-            //     fontSize: 24,
-            //     fontWeight: FontWeight.bold,
-            //   ),
-            // ),
+                child: Text('Debug info:\nOn route: ${navController.onRoute}\nCurrent coordinates: ${navController.currentCoordinates}\nGPS accuracy: ${navController.gpsAccuracy}\nCurrent path step: ${navController.currentPathStep}\nTotal steps: ${navController.totalPathStepCount}\nCurrent Path:', style: TextStyle(
+                  fontSize: 12,
+                  color: Color.fromRGBO(57, 23, 23, 0.2),
+                ))),
           ],
         ));
       }),
     );
+  }
+
+  @override
+  void dispose() {
+    navController.endRouting();
+    super.dispose();
   }
 }
 
