@@ -1,17 +1,33 @@
 import 'package:flutter/material.dart';
 import 'directions.dart';
 import 'location_tracker_screen.dart';
+import '../utils/navigation_controller.dart';
+import 'package:get/get.dart';
 
-class DestinationSelect extends StatelessWidget {
+class DestinationSelect extends StatefulWidget {
+  @override
+  State<DestinationSelect> createState() => _DestinationSelectState();
+}
+
+class _DestinationSelectState extends State<DestinationSelect> {
+  final navController = Get.put(NavigationController(), permanent: true);
+  var destination = '';  // Change this destination to what the location picker says!
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Destination Selection'),
         actions: <Widget>[
-          IconButton(onPressed: (){
-            Navigator.push(context, MaterialPageRoute(builder: (context)=>LocationTracker()));
-          }, icon: Icon(Icons.bug_report,))],
+          IconButton(
+              onPressed: () {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => LocationTracker()));
+              },
+              icon: Icon(
+                Icons.bug_report,
+              ))
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -38,39 +54,50 @@ class DestinationSelect extends StatelessWidget {
               ),
               SizedBox(height: 10),
               SizedBox(
-                height: 50,
-                width: 300,
-                child: FilledButton.icon(
-                  onPressed: (){
-                    Navigator.push(context,
-                    MaterialPageRoute(builder: (context)=>Directions())
-                    );
-                  },
-                  icon: const Icon(Icons.home_filled),
-                  label: const Text('Home'))
-              ),
+                  height: 50,
+                  width: 300,
+                  child: FilledButton.icon(
+                      onPressed: () {
+                        destination =
+                            "Block 59, 59 Changi South Ave 1, Singapore 485999";
+                        navController.beginRouting(destination);
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => Directions()));
+                      },
+                      icon: const Icon(Icons.home_filled),
+                      label: const Text('Home'))),
               SizedBox(height: 10),
               SizedBox(
-                height: 50,
-                width: 300,
-                child: FilledButton.icon(
-                  onPressed: (){
-                    Navigator.push(context,
-                    MaterialPageRoute(builder: (context)=>Directions())
-                    );
-                  },
-                  icon: const Icon(Icons.fastfood),
-                  label: const Text('McDonald\'s'))
-              ),
+                  height: 50,
+                  width: 300,
+                  child: FilledButton.icon(
+                      onPressed: () {
+                        destination = "McDonald's Eastpoint Mall";
+                        navController.beginRouting(destination);
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => Directions()));
+                      },
+                      icon: const Icon(Icons.fastfood),
+                      label: const Text('McDonald\'s'))),
               SizedBox(height: 10),
               SizedBox(
-                height: 50,
-                width: 300,
-                child: FilledButton.icon(
-                  onPressed: (){},
-                  icon: const Icon(Icons.school),
-                  label: const Text('School'))
-              )
+                  height: 50,
+                  width: 300,
+                  child: FilledButton.icon(
+                      onPressed: () {
+                        destination = 'Singapore Polytechnic';
+                        navController.beginRouting(destination);
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => Directions()));
+                      },
+                      icon: const Icon(Icons.school),
+                      label: const Text('School')))
             ],
           ),
         ),
@@ -78,5 +105,3 @@ class DestinationSelect extends StatelessWidget {
     );
   }
 }
-
-

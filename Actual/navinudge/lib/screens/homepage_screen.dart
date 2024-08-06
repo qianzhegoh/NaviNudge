@@ -3,6 +3,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'bluetooth_setup_screen.dart';
 import 'profile_screen.dart';
 import 'destination.dart';
+import '../utils/navigation_controller.dart';
+import 'package:get/get.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -14,6 +16,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
   late GoogleMapController mapController;
+  final navController = Get.put(NavigationController(), permanent: true);
 
 //sets the location of the saved locations 
   static const _school = LatLng(1.3412841720874797, 103.96375602825361);
@@ -24,6 +27,7 @@ class _HomePageState extends State<HomePage> {
 
   void _onMapCreated(GoogleMapController controller) {
     mapController = controller;
+    navController.startLocationStream(); // opportunistically start the location controller once the homepage is up
   }
 
   List<Widget> _pages() => <Widget>[

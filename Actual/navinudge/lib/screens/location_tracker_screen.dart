@@ -31,7 +31,7 @@ class LocationTracker extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
-                  "Current coordinates: ${navController.currentCoordinates.value}\nGPS accuracy: ${navController.gpsAccuracy.value}",
+                  "Current coordinates: ${navController.currentCoordinates}\nGPS accuracy: ${navController.gpsAccuracy}",
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -44,7 +44,7 @@ class LocationTracker extends StatelessWidget {
                   height: 30.0,
                 ),
                 Text(
-                  "Desired bearing: ${navController.desiredBearing.value}",
+                  "Desired bearing: ${navController.desiredBearing}",
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
