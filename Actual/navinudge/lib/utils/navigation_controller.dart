@@ -301,6 +301,7 @@ class NavigationController extends GetxController {
     }
     //TODO: further processing to be done here to retrieve bearing
     // Current positon can be fed into a bearing calculation algo
-    desiredBearing.value = Geolocator.bearingBetween(position.latitude, position.longitude, futureCoordinates[0], futureCoordinates[1]);
+    final bearingCalculated = Geolocator.bearingBetween(position.latitude, position.longitude, futureCoordinates[0], futureCoordinates[1]);
+    desiredBearing.value = bearingCalculated < 0 ? bearingCalculated + 360 : bearingCalculated;
   }
 }
