@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'real_bluetooth_setup_screen.dart';
+import 'profile_screen.dart';
 
 class SetUp extends StatelessWidget {
   const SetUp({Key? key}) : super(key: key);
@@ -42,7 +43,12 @@ class SetUp extends StatelessWidget {
                   height: 50,
                   width: 300,
                   child: FilledButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => ProfilePage()));
+                    },
                     child: const Text("No, I am a caretaker",
                         style: TextStyle(fontSize: 18)),
                   ),
