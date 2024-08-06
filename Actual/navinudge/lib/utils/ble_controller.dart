@@ -38,6 +38,13 @@ class BleController extends GetxController {
   BluetoothDevice? _rightNode;
   BluetoothCharacteristic? _leftNodeIMU;
   BluetoothCharacteristic? _rightNodeIMU;
+  BluetoothCharacteristic? _leftNodeMode;
+  BluetoothCharacteristic? _rightNodeMode;
+  BluetoothCharacteristic? _leftNodeCurrentBearing;
+  BluetoothCharacteristic? _rightNodeCurrentBearing;
+  BluetoothCharacteristic? _leftNodeFutureBearing;
+  BluetoothCharacteristic? _rightNodeFutureBearing;
+
 
   @override
   void onInit() {
@@ -66,6 +73,24 @@ class BleController extends GetxController {
             _leftNodeIMU = characteristic;
           } else if (device.advName.isCaseInsensitiveContains("Right")) {
             _rightNodeIMU = characteristic;
+          }
+        } else if (characteristic.uuid == modeGUID) {
+          if (device.advName.isCaseInsensitiveContains("Left")) {
+            _leftNodeMode = characteristic;
+          } else if (device.advName.isCaseInsensitiveContains("Right")) {
+            _rightNodeMode = characteristic;
+          }
+        } else if (characteristic.uuid == currentBearingGUID) {
+          if (device.advName.isCaseInsensitiveContains("Left")) {
+            _leftNodeCurrentBearing = characteristic;
+          } else if (device.advName.isCaseInsensitiveContains("Right")) {
+            _rightNodeCurrentBearing = characteristic;
+          }
+        } else if (characteristic.uuid == futureBearingGUID) {
+          if (device.advName.isCaseInsensitiveContains("Left")) {
+            _leftNodeFutureBearing = characteristic;
+          } else if (device.advName.isCaseInsensitiveContains("Right")) {
+            _rightNodeFutureBearing = characteristic;
           }
         }
       }
@@ -206,6 +231,15 @@ class BleController extends GetxController {
     return returnValue;
   }
 
+  Future<void> writeFutureBearing(double bearing) async {
+    if (_leftNode != null && _rightNode != null) {
+      await _writeCharacteristic(_leftNode!, futureBearingGUID, utf8.encode(bearing.toString()));
+      await _writeCharacteristic(_rightNode!, futureBearingGUID, utf8.encode(bearing.toString()));
+    } else {
+      print("One or more nodes are disconnected, unable to write future bearing!");
+    }
+  }
+
   Future<void> enableIMUBoth() async {
     if (_leftNode != null) {
       // Start the device's IMU data "firehose" by switching characteristic 0x2A3F (mode) to 2
@@ -233,8 +267,12 @@ class BleController extends GetxController {
           computeQuaternionDiff(leftQuaternion.value, rightQuaternion.value); // compute difference in quaternions and see if acceptableGait is true
           if (acceptableGait.value == true) {
             // Record down the current bearing
-            //TODO we might need to record the timestamp of this information to ensure it is not stale
             currentBearing.value = computeBearing(leftQuaternion.value, true);
+            // the device needs to be informed about its current bearing
+            if (_leftNode != null && _rightNode != null) {
+              _writeCharacteristic(_leftNode!, currentBearingGUID, utf8.encode(currentBearing.value.toString()));
+              _writeCharacteristic(_rightNode!, currentBearingGUID, utf8.encode(currentBearing.value.toString()));
+            }
           }
         }
       });

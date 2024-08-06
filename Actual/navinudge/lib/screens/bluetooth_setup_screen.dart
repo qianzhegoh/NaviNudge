@@ -3,14 +3,14 @@ import 'package:get/get.dart';
 import '../utils/ble_controller.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-class BluetoothSetup extends StatefulWidget {
-  const BluetoothSetup({super.key});
+class BluetoothDebugger extends StatefulWidget {
+  const BluetoothDebugger({super.key});
 
   @override
-  State<BluetoothSetup> createState() => _BluetoothSetupState();
+  State<BluetoothDebugger> createState() => _BluetoothDebuggerState();
 }
 
-class _BluetoothSetupState extends State<BluetoothSetup> {
+class _BluetoothDebuggerState extends State<BluetoothDebugger> {
   final BleController bleController = Get.put(BleController(), permanent: true);
 
   Future<void> _requestPermissions() async {

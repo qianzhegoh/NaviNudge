@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'real_bluetooth_setup_screen.dart';
+import 'bluetooth_setup_screen.dart';
 import 'profile_screen.dart';
 
 class SetUp extends StatelessWidget {
@@ -18,7 +19,7 @@ class SetUp extends StatelessWidget {
               Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => const BluetoothSetup()));
+                      builder: (context) => const BluetoothDebugger()));
             },
           ),
         ],
