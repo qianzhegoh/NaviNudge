@@ -108,7 +108,7 @@ class NavigationPage extends StatelessWidget {
             child: ElevatedButton(
               onPressed: (){
                 Navigator.push(
-                  context, MaterialPageRoute(builder: (context) => BluetoothSetup())
+                  context, MaterialPageRoute(builder: (context) => BluetoothDebugger())
                 );
               }, 
               child: const Text("Bluetooth example",

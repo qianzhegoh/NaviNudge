@@ -186,7 +186,11 @@ class NavigationController extends GetxController {
                 userReadableInstructions.value = decodedRoutingResult.generateReadableString();
                 futureCoordinates.value = decodedRoutingResult.endCoordinate;
                 recomputeBearing();
-                imageURL.value = 'assets/images/walking.png';
+                if (decodedRoutingResult.travelMode == TravelMode.transit) {
+                  imageURL.value = 'assets/images/bus.png';
+                } else {
+                  imageURL.value = 'assets/images/walking.png';
+                }
               }
             } else {
               print('Error in routing! Error message: route has no steps');
