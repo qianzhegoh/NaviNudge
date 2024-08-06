@@ -32,19 +32,19 @@ class _CaretakerOverviewState extends State<CaretakerOverview> {
           ),
           //displays the markers for the saved locations 
           markers:{
-            const Marker(
+             Marker(
               markerId: MarkerId('School'), 
-              icon: BitmapDescriptor.defaultMarker, 
+              icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueCyan), 
               position: _son),  
 
-            const Marker(
+             Marker(
               markerId: MarkerId('Market'),
-              icon: BitmapDescriptor.defaultMarker, 
+              icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueMagenta), 
               position: _father ),          
 
-            const Marker(
+             Marker(
               markerId: MarkerId('Home'),
-              icon: BitmapDescriptor.defaultMarker, 
+              icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRose), 
               position: _mother,
               )
           }
