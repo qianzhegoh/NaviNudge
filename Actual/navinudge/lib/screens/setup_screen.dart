@@ -9,7 +9,20 @@ class SetUp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Set up your device")),
+      appBar: AppBar(
+        title: const Text("Set up your device"),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.bug_report),
+            onPressed: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const BluetoothSetup()));
+            },
+          ),
+        ],
+      ),
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -54,19 +67,6 @@ class SetUp extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: 10),
-                SizedBox(
-                  height:50,
-                  width:300,
-                  child: FilledButton(
-                    onPressed: (){
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const BluetoothSetup()));
-                    },
-                    child: const Text('BT DEBUG MODE!', style: TextStyle(fontSize: 20))
-                  )
-                ),
               ],
             ),
             const SizedBox(height: 20),
