@@ -52,7 +52,7 @@ class _DirectionsState extends State<Directions> {
                   // Navigator.push(context,
                   //     MaterialPageRoute(builder: (context) => DirectionsBus()));
                 },
-                child: Text('Debug info:\nOn route: ${navController.onRoute}\nCurrent coordinates: ${navController.currentCoordinates}\nGPS accuracy: ${navController.gpsAccuracy}\nCurrent path step: ${navController.currentPathStep}\nTotal steps: ${navController.totalPathStepCount}\nCurrent Path:', style: TextStyle(
+                child: Text('Debug info:\nOn route: ${navController.onRoute}\nCurrent coordinates: ${navController.currentCoordinates}\nTarget coordinates: ${navController.futureCoordinates}\nBearing to walk towards: ${navController.desiredBearing}\nGPS accuracy: ${navController.gpsAccuracy}\nCurrent path step: ${navController.currentPathStep}\nTotal steps: ${navController.totalPathStepCount}\nCurrent Path:', style: TextStyle(
                   fontSize: 12,
                   color: Color.fromRGBO(57, 23, 23, 0.2),
                 ))),

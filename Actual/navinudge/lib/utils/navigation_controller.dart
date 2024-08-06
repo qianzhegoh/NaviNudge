@@ -8,8 +8,8 @@ import '../strings.dart';
 
 class DecodedLeg {
   String stepInstructions;
-  List<num> startCoordinate;
-  List<num> endCoordinate;
+  List<double> startCoordinate;
+  List<double> endCoordinate;
   TravelMode travelMode;
   String? transitLineName; // Aka bus number or MRT line
   num? headway; // Headway in seconds
@@ -178,11 +178,14 @@ class NavigationController extends GetxController {
                 userReadableInstructions.value = "Error loading route, please retry";
                 return;
               }
-              final decodedRoutingResult = decodeNextWaypoint(newRoutingResult, currentPathStep.value)?.generateReadableString();
+              final decodedRoutingResult = decodeNextWaypoint(newRoutingResult, currentPathStep.value);
               if (decodedRoutingResult == null) {
                 userReadableInstructions.value = "Error loading route, please retry";
               } else {
-                userReadableInstructions.value = decodedRoutingResult;
+                // START TRIP HERE START TRIP HERE
+                userReadableInstructions.value = decodedRoutingResult.generateReadableString();
+                futureCoordinates.value = decodedRoutingResult.endCoordinate;
+                recomputeBearing();
                 imageURL.value = 'assets/images/walking.png';
               }
             } else {
@@ -241,8 +244,8 @@ class NavigationController extends GetxController {
       return null;
     }
     final polylineDecoded = decodePolyline(polyline);
-    final startCoordinate = polylineDecoded.first;
-    final endCoordinate = polylineDecoded.last;
+    final startCoordinate = [polylineDecoded.first[0].toDouble(), polylineDecoded.first[1].toDouble()];
+    final endCoordinate = [polylineDecoded.last[0].toDouble(), polylineDecoded.last[1].toDouble()];
 
     final returnValue = DecodedLeg(stepInstructions, startCoordinate, endCoordinate, stepTravelMode);
     if (stepTravelMode == TravelMode.transit) {
@@ -299,6 +302,8 @@ class NavigationController extends GetxController {
       final newRoutingResult = routingResult;
       if (newRoutingResult == null) {
         print("Error advancing path, routing result is null!");
+        userReadableInstructions.value = "Error loading route, please retry";
+        // TODO: set image to error
         return;
       }
       final decodedRoutingResult = decodeNextWaypoint(newRoutingResult, currentPathStep.value);
@@ -306,15 +311,16 @@ class NavigationController extends GetxController {
         userReadableInstructions.value = "Error loading route, please retry";
         // TODO: set image to error
       } else {
+        // SUCCESS GETTING NEW PART OF PATH
         userReadableInstructions.value = decodedRoutingResult.generateReadableString();
         if (decodedRoutingResult.travelMode == TravelMode.transit) {
           imageURL.value = 'assets/images/bus.png';
         } else if (decodedRoutingResult.travelMode == TravelMode.walking) {
           imageURL.value = 'assets/images/walking.png';
         }
+        futureCoordinates.value = decodedRoutingResult.endCoordinate;
+        recomputeBearing();
       }
-
-      // imageURL
     } else {
       // user has reached!!
       userReadableInstructions.value = 'You have arrived at your destination 😄';
@@ -327,7 +333,13 @@ class NavigationController extends GetxController {
     onRoute.value = false;
     currentPathStep.value = -1;
     totalPathStepCount.value = -1;
+    futureCoordinates.value = [0.0,0.0];
     routingResult = null;
+  }
+
+  void recomputeBearing() {
+    final bearingCalculated = Geolocator.bearingBetween(currentCoordinates[0], currentCoordinates[1], futureCoordinates[0], futureCoordinates[1]);
+    desiredBearing.value = bearingCalculated < 0 ? bearingCalculated + 360 : bearingCalculated;
   }
 
   void locationUpdatedListener(Position position) {
@@ -340,7 +352,10 @@ class NavigationController extends GetxController {
     }
     //TODO: further processing to be done here to retrieve bearing
     // Current positon can be fed into a bearing calculation algo
-    final bearingCalculated = Geolocator.bearingBetween(position.latitude, position.longitude, futureCoordinates[0], futureCoordinates[1]);
-    desiredBearing.value = bearingCalculated < 0 ? bearingCalculated + 360 : bearingCalculated;
+    if (onRoute.value) {
+      recomputeBearing();
+    } else {
+      futureCoordinates.value = [0.0,0.0];
+    }
   }
 }
