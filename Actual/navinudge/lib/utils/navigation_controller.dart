@@ -6,6 +6,35 @@ import 'package:google_directions_api/google_directions_api.dart';
 import 'package:google_polyline_algorithm/google_polyline_algorithm.dart';
 import '../strings.dart';
 
+class DecodedLeg {
+  String stepInstructions;
+  List<num> startCoordinate;
+  List<num> endCoordinate;
+  TravelMode travelMode;
+  String? transitLineName; // Aka bus number or MRT line
+  num? headway; // Headway in seconds
+  String? headsign; // E.g. 'Woodlands', where is the transit moving towards
+  String? startStop; // Name of the originating stop
+  String? endStop; // Name of the alighting stop
+  
+  DecodedLeg(this.stepInstructions, this.startCoordinate, this.endCoordinate, this.travelMode); // Please inject the public transport information after calling this constructor!
+
+  String generateReadableString() {
+    if (travelMode == TravelMode.walking) {
+      return 'Walking, please use guidance from NaviNudge';
+    } else if (travelMode == TravelMode.transit) {
+      // Determine bus or MRT
+      if (stepInstructions.startsWith('Bus')) {
+        // bus
+        return 'Please take bus $transitLineName towards $headsign.\nThe bus comes every ${headway!/60} minutes.';
+      } else if (stepInstructions.startsWith('Subway')) {
+        return 'Please take $transitLineName towards $headsign.\nThe train comes every ${headway!/60} minutes.';
+      }
+    }
+    return 'Error, please contact helpdesk for more info.';
+  }
+}
+
 class NavigationController extends GetxController {
   // Private variables
   // Position? _currentPosition; // NOTE: this object also bundles position accuracy inside
@@ -13,17 +42,17 @@ class NavigationController extends GetxController {
   var _originLocation = '';
   var _destinationLocation = ''; //NOTE: do we just encode locations as strings?
   DirectionsService? directionsService;
-  DirectionsResult? routingResult;
+  Leg? routingResult; // NOTE: yes it's a bit strange to use Leg as the routed result, but it's because Singapore-directions only have 1 leg of journey. Use routingResult.steps if you want to enumerate through all the steps
 
   // Observable variables
-  var locationServiceActive = false.obs; // This shows whether the location service is current receiving GPS coordinate updates. This is NOT the same as whether location services are enabled
-  var gpsAccuracy = 0.obs; // The radius of position estimate
-  var currentCoordinates = [0.0,0.0].obs; // Lat, Lon
+  var locationServiceActive = false.obs;  // This shows whether the location service is current receiving GPS coordinate updates. This is NOT the same as whether location services are enabled
+  var gpsAccuracy = 0.obs;                // The radius of position estimate
+  var currentCoordinates = [0.0,0.0].obs; // Format: Lat, Lon
   var futureCoordinates = [0.0,0.0].obs;
-  var desiredBearing = 0.0.obs; // This is the desired bearing to the target, from our current location
-  var onRoute = false.obs; // This shows whether the system has successfully computed the route
-  var currentPathStep = (-1).obs; // The current step of the path, 0 indexed. -1 means path not routed.
-  var totalPathStepCount = -1;
+  var desiredBearing = 0.0.obs;           // This is the desired bearing to the target, from our current location
+  var onRoute = false.obs;                // This shows whether the system has successfully computed the route
+  var currentPathStep = (-1).obs;         // The current step of the path, 0 indexed. -1 means path not routed.
+  var totalPathStepCount = -1;            // Total number of "steps" in the entire journey
 
   @override
   void onInit() {
@@ -104,6 +133,7 @@ class NavigationController extends GetxController {
             final legs = route.legs;
             if (legs != null && legs.isNotEmpty) {
               final leg = legs[0]; // Same thing here, only offer the first solution
+              routingResult = leg;
               print('=============================');
               print('Departure time: ${leg.departureTime}');
               print('Arrival time: ${leg.arrivalTime}');
@@ -123,11 +153,12 @@ class NavigationController extends GetxController {
                   print('Path: $polylineArray');
                 }
                 if (step.transit != null) { // This step is a transit step
-                  print('Transit short name: ${step.transit!.tripShortName}');
-                  print('Departure stop: ${step.transit!.departureStop?.name}');
-                  print('Arrival stop: ${step.transit!.arrivalStop?.name}');
-                  print('Number of stops: ${step.transit!.numStops}');
-                  print('Headway: ${step.transit!.headway}');
+                  print('Transit short name: ${step.transit?.tripShortName}');
+                  print('Departure stop: ${step.transit?.departureStop?.name}');
+                  print('Arrival stop: ${step.transit?.arrivalStop?.name}');
+                  print('Number of stops: ${step.transit?.numStops}');
+                  print('Headway: ${step.transit?.headway}');
+                  print('Headsign: ${step.transit?.headsign}');
                   if (step.transit!.line != null) {
                     print('Transit line name: ${step.transit!.line!.name}, Short name: ${step.transit!.line!.shortName}');
                   }
@@ -136,7 +167,7 @@ class NavigationController extends GetxController {
             }
              
             if (totalPathStepCount > 0) {
-              routingResult = response; // Confirm routing is a success
+              // Confirm routing is a success
               onRoute.value = true;
             } else {
               print('Error in routing! Error message: route has no steps');
@@ -157,6 +188,85 @@ class NavigationController extends GetxController {
     }
   }
 
+  // This function decodes the leg into its start point, end point, travel mode, bus number/train line and more.
+  DecodedLeg? decodeNextWaypoint(Leg routingResult, int currentStep) {
+    final steps = routingResult.steps;
+    if (steps == null) {
+      print("Steps is null!");
+      return null;
+    }
+    final step = currentStep < steps.length ? steps[currentStep] : null;
+    if (step == null) {
+      print("Single step is null!");
+      return null;
+    }
+
+    // Decode step instructions
+    final stepInstructions = step.instructions;
+    if (stepInstructions == null) {
+      print("Step instructions is null!");
+      return null;
+    }
+
+    // Find out the type of step
+    final stepTravelMode = step.travelMode;
+    if (stepTravelMode == null) {
+      print("Step travel mode is null!");
+      return null;
+    }
+    
+    // Decode polyline
+    final polyline = step.polyline?.points;
+    if (polyline == null) {
+      print("Polyline is null!");
+      return null;
+    }
+    final polylineDecoded = decodePolyline(polyline);
+    final startCoordinate = polylineDecoded.first;
+    final endCoordinate = polylineDecoded.last;
+
+    final returnValue = DecodedLeg(stepInstructions, startCoordinate, endCoordinate, stepTravelMode);
+    if (stepTravelMode == TravelMode.transit) {
+      // Decode transit line name
+      final transitLineName = step.transit?.line?.name;
+      if (transitLineName == null) {
+        print("Transit line name is null!");
+        return null;
+      }
+      returnValue.transitLineName = transitLineName;
+
+      final headway = step.transit?.headway;
+      if (headway == null) {
+        print("Headway is null!");
+        return null;
+      }
+      returnValue.headway = headway;
+
+      final headsign = step.transit?.headsign;
+      if (headsign == null) {
+        print("Headsign is null!");
+        return null;
+      }
+      returnValue.headsign = headsign;
+
+      final startStop = step.transit?.departureStop?.name;
+      if (startStop == null) {
+        print("Start stop is null!");
+        return null;
+      }
+      returnValue.startStop = startStop;
+
+      final endStop = step.transit?.arrivalStop?.name;
+      if (endStop == null) {
+        print("End stop is null!");
+        return null;
+      }
+      returnValue.endStop = endStop;
+    }
+
+    return returnValue;
+  }
+
   // This function is called when the system detects the user can move on to the next stage of the path. 
   void advancePath() {
     if (currentPathStep.value < 0 || onRoute.value == false) {
@@ -167,11 +277,12 @@ class NavigationController extends GetxController {
     currentPathStep++;
     if (currentPathStep < totalPathStepCount) {
       // clear to advance
+      
     } else {
       // yay user has reached!!
       // TODO: some sort of notification system to tell the user has reached
       endRouting();
-      endLocationStream();
+      // endLocationStream(); //TODO: might not want to end location stream, since you do need to retrigger location
     }
   }
 
@@ -190,6 +301,7 @@ class NavigationController extends GetxController {
     }
     //TODO: further processing to be done here to retrieve bearing
     // Current positon can be fed into a bearing calculation algo
-    desiredBearing.value = Geolocator.bearingBetween(position.latitude, position.longitude, 1.338148121952961, 103.96811479790857);
+    final bearingCalculated = Geolocator.bearingBetween(position.latitude, position.longitude, futureCoordinates[0], futureCoordinates[1]);
+    desiredBearing.value = bearingCalculated < 0 ? bearingCalculated + 360 : bearingCalculated;
   }
 }

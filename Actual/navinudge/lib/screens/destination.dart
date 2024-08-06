@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'directions.dart';
+import 'location_tracker_screen.dart';
 
 class DestinationSelect extends StatelessWidget {
   @override
@@ -7,6 +8,10 @@ class DestinationSelect extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Destination Selection'),
+        actions: <Widget>[
+          IconButton(onPressed: (){
+            Navigator.push(context, MaterialPageRoute(builder: (context)=>LocationTracker()));
+          }, icon: Icon(Icons.bug_report,))],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -49,9 +54,13 @@ class DestinationSelect extends StatelessWidget {
                 height: 50,
                 width: 300,
                 child: FilledButton.icon(
-                  onPressed: (){},
-                  icon: const Icon(Icons.shopping_cart),
-                  label: const Text('Market'))
+                  onPressed: (){
+                    Navigator.push(context,
+                    MaterialPageRoute(builder: (context)=>Directions())
+                    );
+                  },
+                  icon: const Icon(Icons.fastfood),
+                  label: const Text('McDonald\'s'))
               ),
               SizedBox(height: 10),
               SizedBox(

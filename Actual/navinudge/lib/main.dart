@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 
 import 'screens/loginpage_screen.dart';
+import 'global.dart';
 
 void main() {
   FlutterBluePlus.setLogLevel(LogLevel.verbose, color:false);
@@ -22,6 +23,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.lightBlue),
       ),
       home: const LoginPage(),
+      scaffoldMessengerKey: snackbarKey,
     );
   }
 }

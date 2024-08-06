@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:math';
+import '../global.dart';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -78,6 +80,7 @@ class BleController extends GetxController {
       device.connectionState.listen((state) {
         if (state == BluetoothConnectionState.connected) {
           print("Device connected: ${device.platformName}");
+
           if (device.advName.contains("Left")) {
             _leftNode = device;
             leftConnected.value = true;
@@ -87,6 +90,7 @@ class BleController extends GetxController {
           }
           // Once device is connected, read the full list of services and characteristics, and store them
           storeCharacteristics(device);
+          _showSnackbar('Device connected: ${device.platformName}');
         } else {
           if (device.advName.contains("Left")) {
             _leftNode = null;
@@ -261,4 +265,13 @@ class BleController extends GetxController {
     }
   }
 
+  void disableIMUBoth() {
+    _writeCharacteristic(_leftNode!, modeGUID, [1]);
+    _writeCharacteristic(_rightNode!, modeGUID, [1]);
+  }
+
+  void _showSnackbar(String text) {
+    final SnackBar snackBar = SnackBar(content: Text(text));
+    snackbarKey.currentState?.showSnackBar(snackBar); 
+  }
 }
