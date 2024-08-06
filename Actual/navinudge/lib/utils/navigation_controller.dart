@@ -26,9 +26,9 @@ class DecodedLeg {
       // Determine bus or MRT
       if (stepInstructions.startsWith('Bus')) {
         // bus
-        return 'Please take bus $transitLineName towards $headsign.\nThe bus comes every ${headway!/60} minutes.';
+        return 'Please take Bus $transitLineName towards $headsign.\nThe bus comes every ${(headway!/60).round()} minutes.';
       } else if (stepInstructions.startsWith('Subway')) {
-        return 'Please take $transitLineName towards $headsign.\nThe train comes every ${headway!/60} minutes.';
+        return 'Please take $transitLineName towards $headsign.\nThe train comes every ${(headway!/60).round()} minutes.';
       }
     }
     return 'Error, please contact helpdesk for more info.';
@@ -52,7 +52,9 @@ class NavigationController extends GetxController {
   var desiredBearing = 0.0.obs;           // This is the desired bearing to the target, from our current location
   var onRoute = false.obs;                // This shows whether the system has successfully computed the route
   var currentPathStep = (-1).obs;         // The current step of the path, 0 indexed. -1 means path not routed.
-  var totalPathStepCount = -1;            // Total number of "steps" in the entire journey
+  var totalPathStepCount = (-1).obs;            // Total number of "steps" in the entire journey
+  var userReadableInstructions = 'Loading routing...'.obs;
+  var imageURL = 'assets/images/walking.png'.obs;
 
   @override
   void onInit() {
@@ -126,7 +128,7 @@ class NavigationController extends GetxController {
           final routes = response.routes;
           if (routes != null && routes.isNotEmpty) {
             print("Successful routing:");
-            totalPathStepCount = 0;
+            totalPathStepCount.value = 0;
             // We give only 1 solution out of all the routes and legs because we don't really want to give user choices...too many choices = confusion
             final route = routes[0];
 
@@ -165,26 +167,43 @@ class NavigationController extends GetxController {
                 }
               }
             }
-             
+            
             if (totalPathStepCount > 0) {
               // Confirm routing is a success
               onRoute.value = true;
+              currentPathStep.value = 0;
+              final newRoutingResult = routingResult;
+              if (newRoutingResult == null) {
+                print("Error advancing path, controller has not started route!");
+                userReadableInstructions.value = "Error loading route, please retry";
+                return;
+              }
+              final decodedRoutingResult = decodeNextWaypoint(newRoutingResult, currentPathStep.value)?.generateReadableString();
+              if (decodedRoutingResult == null) {
+                userReadableInstructions.value = "Error loading route, please retry";
+              } else {
+                userReadableInstructions.value = decodedRoutingResult;
+                imageURL.value = 'assets/images/walking.png';
+              }
             } else {
               print('Error in routing! Error message: route has no steps');
+              userReadableInstructions.value = "Error loading route, please retry";
               routingResult = null;
-              onRoute.value = false;
-              totalPathStepCount = -1;
+              endRouting();
             }
           } else {
             print('Error in routing! Error message: No routes available');
+            userReadableInstructions.value = "Error loading route, please retry";
           }
         } else {
           // do something with error response
           print('Error in routing! Error message: $response');
+          userReadableInstructions.value = "Error loading route, please retry";
         }
       });
     } else {
       print('Location service not active!! Routing cannot proceed');
+      userReadableInstructions.value = 'Location services not active, please turn on location services';
     }
   }
 
@@ -274,21 +293,41 @@ class NavigationController extends GetxController {
       return;
     }
 
-    currentPathStep++;
-    if (currentPathStep < totalPathStepCount) {
+    currentPathStep.value++;
+    if (currentPathStep.value < totalPathStepCount.value) {
       // clear to advance
-      
+      final newRoutingResult = routingResult;
+      if (newRoutingResult == null) {
+        print("Error advancing path, routing result is null!");
+        return;
+      }
+      final decodedRoutingResult = decodeNextWaypoint(newRoutingResult, currentPathStep.value);
+      if (decodedRoutingResult == null) {
+        userReadableInstructions.value = "Error loading route, please retry";
+        // TODO: set image to error
+      } else {
+        userReadableInstructions.value = decodedRoutingResult.generateReadableString();
+        if (decodedRoutingResult.travelMode == TravelMode.transit) {
+          imageURL.value = 'assets/images/bus.png';
+        } else if (decodedRoutingResult.travelMode == TravelMode.walking) {
+          imageURL.value = 'assets/images/walking.png';
+        }
+      }
+
+      // imageURL
     } else {
-      // yay user has reached!!
-      // TODO: some sort of notification system to tell the user has reached
+      // user has reached!!
+      userReadableInstructions.value = 'You have arrived at your destination 😄';
+      imageURL.value = 'assets/images/end.png';
       endRouting();
-      // endLocationStream(); //TODO: might not want to end location stream, since you do need to retrigger location
     }
   }
 
   void endRouting(){
     onRoute.value = false;
     currentPathStep.value = -1;
+    totalPathStepCount.value = -1;
+    routingResult = null;
   }
 
   void locationUpdatedListener(Position position) {
