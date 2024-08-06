@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'caretaker_screen.dart';
+import 'saved_locations.dart';
 
 class ProfilePage extends StatelessWidget {
   @override
@@ -26,7 +27,7 @@ class ProfilePage extends StatelessWidget {
             ),
             SizedBox(height:10),
             Text('tanjosephine8@gmail.com'),
-            SizedBox(height: 50),
+            SizedBox(height: 30),
             Text('Settings',
               textAlign: TextAlign.left,
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
@@ -43,6 +44,20 @@ class ProfilePage extends StatelessWidget {
                           builder: (context) => CaretakerOverview()));
                 },
                 child: Text('Caretaker Mode'),
+              ),
+            ),
+            SizedBox(height: 10),
+            SizedBox(
+              height: 50,
+              width: 300,
+              child: FilledButton(
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => SavedLocations()));
+                },
+                child: Text('Saved Locations'),
               ),
             ),
             SizedBox(height: 10),
