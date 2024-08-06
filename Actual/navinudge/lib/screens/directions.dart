@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'homepage_screen.dart';
 import '../utils/navigation_controller.dart';
+import '../utils/ble_controller.dart';
 import 'package:get/get.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 //QZ: I am not too sure how to integrate the steps (which part of the journey, wether if its bus mode or walking mode).
 //Hence, I have created 3 different screens instead.
@@ -15,8 +16,8 @@ class Directions extends StatefulWidget {
 }
 
 class _DirectionsState extends State<Directions> {
-  final NavigationController navController =
-      Get.put(NavigationController(), permanent: true);
+  final NavigationController navController = Get.put(NavigationController(), permanent: true);
+  final BleController bleController = Get.put(BleController(), permanent: true);
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +26,16 @@ class _DirectionsState extends State<Directions> {
         title: Text('Directions'),
         centerTitle: true,
       ),
-      body: Obx(() {
+      body: Obx(() {        
+        if (bleController.leftConnected.value == false || bleController.rightConnected.value == false) {
+          return Center(child: Text('Please connect to both devices before beginning your journey.\n Left device connected: ${bleController.leftConnected.value}.\nRight device connected: ${bleController.rightConnected.value}'));
+        }
+        if (bleController.leftQuality.value < 2 || bleController.rightQuality.value < 2) {
+          return Center(child: Text('Please swing your arms in all directions before starting your journey to calibrate the compass.\n Left device compass accuracy: ${bleController.leftQuality.value}.\nRight device compass accuracy: ${bleController.rightQuality.value}'));
+        }
+        if (bleController.currentBearing.value != 0) {
+          bleController.writeFutureBearing(navController.desiredBearing.value);
+        }
         return Center(
             child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -52,10 +62,12 @@ class _DirectionsState extends State<Directions> {
                   // Navigator.push(context,
                   //     MaterialPageRoute(builder: (context) => DirectionsBus()));
                 },
-                child: Text('Debug info:\nOn route: ${navController.onRoute}\nCurrent coordinates: ${navController.currentCoordinates}\nTarget coordinates: ${navController.futureCoordinates}\nBearing to walk towards: ${navController.desiredBearing}\nGPS accuracy: ${navController.gpsAccuracy}\nCurrent path step: ${navController.currentPathStep}\nTotal steps: ${navController.totalPathStepCount}\nCurrent Path:', style: TextStyle(
-                  fontSize: 12,
-                  color: Color.fromRGBO(57, 23, 23, 0.2),
-                ))),
+                child: Text(
+                    'Debug info:\nOn route: ${navController.onRoute}\nCurrent coordinates: ${navController.currentCoordinates}\nTarget coordinates: ${navController.futureCoordinates}\nBearing to walk towards: ${navController.desiredBearing}\nCurrent bearing: ${bleController.currentBearing.value}\nGPS accuracy: ${navController.gpsAccuracy}\nCurrent path step: ${navController.currentPathStep}\nTotal steps: ${navController.totalPathStepCount}\nWithin desired positions: ${bleController.acceptableGait.value}\n',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Color.fromRGBO(0, 0, 0, 0.2),
+                    ))),
           ],
         ));
       }),
@@ -63,94 +75,14 @@ class _DirectionsState extends State<Directions> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    bleController.enableIMUBoth();
+  }
+
+  @override
   void dispose() {
     navController.endRouting();
     super.dispose();
-  }
-}
-
-/*
-
-*/
-
-class DirectionsBus extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Directions'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Profile picture
-            CircleAvatar(
-              radius: 80,
-              backgroundImage:
-                  AssetImage('assets/images/bus.png'), // Default avatar image
-            ),
-            SizedBox(height: 20),
-            // Profile name
-            Text(
-              'Please take Bus 5 towards Bt Merah Int. The bus comes every 15 minutes.',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 50),
-            TextButton(
-                onPressed: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => DirectionsEnd()));
-                },
-                child: Text('p'))
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class DirectionsEnd extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Directions'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Profile picture
-            CircleAvatar(
-              radius: 80,
-              backgroundImage:
-                  AssetImage('assets/images/end.png'), // Default avatar image
-            ),
-            SizedBox(height: 20),
-            // Profile name
-            Text(
-              'You have reached your destination',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 50),
-            TextButton(
-                onPressed: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => HomePage()));
-                },
-                child: Text('p'))
-          ],
-        ),
-      ),
-    );
   }
 }
