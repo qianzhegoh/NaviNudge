@@ -19,7 +19,7 @@ class _HomePageState extends State<HomePage> {
   final navController = Get.put(NavigationController(), permanent: true);
 
 //sets the location of the saved locations 
-  static const _school = LatLng(1.3412841720874797, 103.96375602825361);
+  static const _school = LatLng(1.341588937316322, 103.96284222213933);
   static const _market = LatLng(1.3352386703088892, 103.96330804919691);
   static const _home = LatLng(1.3423764200463901, 103.96427544320599);
 
@@ -34,7 +34,7 @@ class _HomePageState extends State<HomePage> {
         GoogleMap(
           onMapCreated: _onMapCreated,
           initialCameraPosition: CameraPosition(
-            target: _home,
+            target: _school,
             zoom: 17.0,
           ),
           //displays the markers for the saved locations 
@@ -44,16 +44,16 @@ class _HomePageState extends State<HomePage> {
               icon: BitmapDescriptor.defaultMarker, 
               position: _school),  
 
-            const Marker(
-              markerId: MarkerId('Market'),
-              icon: BitmapDescriptor.defaultMarker, 
-              position: _market ),          
+            // const Marker(
+            //   markerId: MarkerId('Market'),
+            //   icon: BitmapDescriptor.defaultMarker, 
+            //   position: _market ),          
 
-            const Marker(
-              markerId: MarkerId('Home'),
-              icon: BitmapDescriptor.defaultMarker, 
-              position: _home,
-              )
+            // const Marker(
+            //   markerId: MarkerId('Home'),
+            //   icon: BitmapDescriptor.defaultMarker, 
+            //   position: _home,
+            //   )
           }
         ),
       
